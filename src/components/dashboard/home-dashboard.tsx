@@ -298,7 +298,7 @@ function WelcomeBanner({
             </span>
           </div>
           <h1 className="text-xl font-bold tracking-tight text-zinc-50 sm:text-2xl">
-            Welcome back,{" "}
+            {greeting},{" "}
             <span className="bg-gradient-to-r from-indigo-300 via-violet-300 to-purple-300 bg-clip-text text-transparent">
               {name}
             </span>
@@ -341,6 +341,11 @@ export function HomeDashboard() {
   const getWeekProgress = useProgressStore((s) => s.getWeekProgress);
 
   const [chartPeriod, setChartPeriod] = useState<ChartPeriod>("this-week");
+  const [chartsReady, setChartsReady] = useState(false);
+
+  useEffect(() => {
+    setChartsReady(true);
+  }, []);
 
   const weeks = useCurriculum();
   const practiceWeekId = useProgressStore((s) => s.getModuleCurrentWeek("practice"));
@@ -503,8 +508,9 @@ export function HomeDashboard() {
               ))}
             </select>
           </div>
-          <div className="min-h-0 flex-1 min-h-[120px]">
-            <ResponsiveContainer width="100%" height="100%" minHeight={120}>
+          <div className="min-h-[140px] flex-1">
+            {chartsReady ? (
+            <ResponsiveContainer width="100%" height="100%" minHeight={140}>
               <BarChart
                 key={chartPeriod}
                 data={chartData}
@@ -546,26 +552,32 @@ export function HomeDashboard() {
                 />
               </BarChart>
             </ResponsiveContainer>
+            ) : (
+              <div className="h-full min-h-[140px] animate-pulse rounded-lg bg-zinc-800/40" />
+            )}
           </div>
         </div>
 
         <div className="flex min-h-0 flex-col rounded-xl border border-zinc-800/80 bg-zinc-900/50 p-3">
           <h2 className="mb-1 shrink-0 text-xs font-semibold text-zinc-100">Skill Progress</h2>
-          <div className="min-h-0 flex-1 min-h-[120px]">
-            <ResponsiveContainer width="100%" height="100%" minHeight={120}>
+          <div className="min-h-[140px] flex-1">
+            {chartsReady ? (
+            <ResponsiveContainer width="100%" height="100%" minHeight={140}>
               <RadarChart data={skillData} cx="50%" cy="50%" outerRadius="72%">
-                <PolarGrid stroke="#3f3f46" />
+                <PolarGrid stroke="#6366f1" strokeOpacity={0.35} />
                 <PolarAngleAxis
                   dataKey="skill"
-                  tick={{ fill: "#a1a1aa", fontSize: 9 }}
+                  tick={{ fill: "#c4b5fd", fontSize: 9 }}
                   tickLine={false}
                 />
                 <Radar
                   name="Progress"
                   dataKey="value"
-                  stroke="#818cf8"
-                  fill="#6366f1"
-                  fillOpacity={0.35}
+                  stroke="#a78bfa"
+                  strokeWidth={2}
+                  fill="#8b5cf6"
+                  fillOpacity={0.55}
+                  dot={{ r: 3, fill: "#c4b5fd", stroke: "#a78bfa", strokeWidth: 1 }}
                   animationDuration={600}
                   animationEasing="ease-out"
                 />
@@ -578,6 +590,9 @@ export function HomeDashboard() {
                 />
               </RadarChart>
             </ResponsiveContainer>
+            ) : (
+              <div className="h-full min-h-[140px] animate-pulse rounded-lg bg-zinc-800/40" />
+            )}
           </div>
         </div>
       </div>
