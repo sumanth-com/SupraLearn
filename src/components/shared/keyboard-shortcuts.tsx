@@ -9,8 +9,8 @@ const shortcuts: Record<string, string> = {
   "2": "/roadmap",
   "3": "/projects",
   "4": "/ai-skills",
-  "5": "/interview",
-  "6": "/analytics",
+  "5": "/communication",
+  "6": "/interview",
   "7": "/notes",
   "8": "/profile",
 };

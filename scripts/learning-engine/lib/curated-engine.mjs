@@ -11,6 +11,10 @@ import {
   buildDistinctCompanyProblem,
 } from "./interview-problem-bank.mjs";
 import { buildDistinctLogicProblem, buildDistinctPatternProblem } from "./logic-pattern-bank.mjs";
+import {
+  buildWeek1FundamentalsProblem,
+  isWeek1FundamentalsTopic,
+} from "./week1-fundamentals-bank.mjs";
 
 const DIFFICULTIES = ["easy", "medium", "hard"];
 
@@ -33,6 +37,10 @@ function typeLabel(type) {
 
 /** Generic Java problem for non-loop topics */
 function generateJavaTypedProblem(slug, topicTitle, category, difficulty, problemType, index) {
+  if (isWeek1FundamentalsTopic(slug)) {
+    return buildWeek1FundamentalsProblem(slug, topicTitle, category, difficulty, problemType, index);
+  }
+
   if (slug === "for-loop") {
     return generateForLoopProblem(difficulty, problemType, index);
   }
@@ -42,7 +50,7 @@ function generateJavaTypedProblem(slug, topicTitle, category, difficulty, proble
   const n = (seed % 15) + 3;
   const rows = (index % 6) + 3;
 
-  if (problemType === "mcq" || problemType === "output-prediction") {
+  if (problemType === "output-prediction") {
     const a = n;
     const b = n + 2;
     const result = a + b;
@@ -326,8 +334,8 @@ function buildPayload(ctx) {
 }
 
 /** Generate full problem bank for a topic */
-export function generateCuratedProblems(slug, topicTitle, category) {
-  const quotas = getQuotasForTopic(slug, category);
+export function generateCuratedProblems(slug, topicTitle, category, topicIndex = 0, topicCount = 1) {
+  const quotas = getQuotasForTopic(slug, category, topicIndex, topicCount);
   const out = { easy: [], medium: [], hard: [] };
 
   for (const difficulty of DIFFICULTIES) {

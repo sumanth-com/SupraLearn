@@ -9,6 +9,7 @@ import { ProblemDocument } from "./problem-document";
 import { HackerrankEditor } from "./hackerrank-editor";
 import { lessonHasWorkspace } from "./editor-workspace";
 import { cn } from "@/lib/utils";
+import { useTrackResumePosition } from "@/hooks/use-resume-position";
 
 const SIDE_TABS = [
   { id: "problem" as const, label: "Problem" },
@@ -88,6 +89,27 @@ export function ChallengeSolveView({ weekId }: ChallengeSolveViewProps) {
       syncUrl(topicSlug, list[0].id, difficulty, type);
     }
   }, [topicBundle, difficulty, problemType, lessonId, topicSlug, syncUrl]);
+
+  const resumeHref = useMemo(() => {
+    if (!topicSlug || !activeLesson) return "";
+    const params = new URLSearchParams();
+    params.set("topic", topicSlug);
+    params.set("lesson", activeLesson.id);
+    params.set("difficulty", difficulty);
+    if (problemType) params.set("type", problemType);
+    return `/roadmap/week/${weekId}/learn?${params.toString()}`;
+  }, [weekId, topicSlug, activeLesson, difficulty, problemType]);
+
+  useTrackResumePosition(
+    "practice",
+    weekId,
+    topicBundle ? `Week ${weekId} · ${topicBundle.topic.title}` : `Week ${weekId}`,
+    activeLesson
+      ? `${activeLesson.title} · ${difficulty.charAt(0).toUpperCase()}${difficulty.slice(1)}`
+      : undefined,
+    resumeHref,
+    Boolean(topicBundle && activeLesson)
+  );
 
   if (!week) {
     return <p className="p-8 text-center text-zinc-500">Week content not found.</p>;

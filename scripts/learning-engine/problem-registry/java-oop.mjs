@@ -12,6 +12,11 @@ import {
   defaultApproaches,
 } from "../lib/rich-fields.mjs";
 import { generateCuratedProblems } from "../lib/curated-engine.mjs";
+import {
+  buildWeek1FundamentalsProblem,
+  isWeek1FundamentalsTopic,
+} from "../lib/week1-fundamentals-bank.mjs";
+import { getQuotasForTopic, estimatedMinutes } from "../lib/problem-type-spec.mjs";
 
 const DIFFICULTIES = ["easy", "medium", "hard"];
 
@@ -691,8 +696,68 @@ function buildProblemPayload(slug, topicTitle, category, difficulty, idx) {
   };
 }
 
-function generateProblems(slug, topicTitle, category) {
-  return generateCuratedProblems(slug, topicTitle, category);
+function problemTypePrefix(problemType) {
+  const map = {
+    mcq: "MCQ",
+    "output-prediction": "Output",
+    "find-bug": "Fix",
+    "dry-run": "Dry Run",
+    interview: "Practice",
+    logic: "Logic",
+  };
+  return map[problemType] ?? "Exercise";
+}
+
+function buildTopicAwareProblem(slug, topicTitle, category, difficulty, problemType, index) {
+  if (isWeek1FundamentalsTopic(slug)) {
+    return buildWeek1FundamentalsProblem(slug, topicTitle, category, difficulty, problemType, index);
+  }
+
+  const payload = buildProblemPayload(slug, topicTitle, category, difficulty, index);
+  const prefix = problemTypePrefix(problemType);
+  const title =
+    problemType === "logic"
+      ? `${topicTitle}: Exercise ${index + 1}`
+      : `${prefix}: ${topicTitle} #${index + 1}`;
+
+  return {
+    ...payload,
+    id: `${slug}-${difficulty}-${problemType}-${index + 1}`,
+    title,
+    description: `${topicTitle} — ${difficulty} level`,
+    problemType,
+    estimatedMinutes: estimatedMinutes(difficulty, problemType),
+    problemStatement: payload.problemStatement
+      ? `Using ${topicTitle}, ${payload.problemStatement.charAt(0).toLowerCase()}${payload.problemStatement.slice(1)}`
+      : `Practice ${topicTitle} at ${difficulty} level.`,
+    companyTags: [],
+  };
+}
+
+function generateTopicAwareProblems(slug, topicTitle, category, topicIndex, topicCount) {
+  const quotas = getQuotasForTopic(slug, category, topicIndex, topicCount);
+  const out = { easy: [], medium: [], hard: [] };
+
+  for (const difficulty of DIFFICULTIES) {
+    let index = 0;
+    for (const { type, count } of quotas[difficulty] ?? []) {
+      for (let i = 0; i < count; i++) {
+        out[difficulty].push(
+          buildTopicAwareProblem(slug, topicTitle, category, difficulty, type, index)
+        );
+        index++;
+      }
+    }
+  }
+  return out;
+}
+
+function generateProblems(slug, topicTitle, category, topicIndex, topicCount) {
+  // Only loop topics use generic pattern/leetcode banks — patterns belong there
+  if (slug === "for-loop" || slug === "while-loop") {
+    return generateCuratedProblems(slug, topicTitle, category, topicIndex, topicCount);
+  }
+  return generateTopicAwareProblems(slug, topicTitle, category, topicIndex, topicCount);
 }
 
 function buildByCategory(weekId, topic, problems) {
@@ -731,7 +796,15 @@ function attachRichFields(lessons, problems) {
 }
 
 function buildTopic(weekId, topic) {
-  const problems = generateProblems(topic.slug, topic.title ?? titleCaseSlug(topic.slug), topic.category);
+  const topicIndex = topic.topicIndex ?? 0;
+  const topicCount = topic.topicCount ?? 1;
+  const problems = generateProblems(
+    topic.slug,
+    topic.title ?? titleCaseSlug(topic.slug),
+    topic.category,
+    topicIndex,
+    topicCount
+  );
   return buildByCategory(weekId, topic, problems);
 }
 

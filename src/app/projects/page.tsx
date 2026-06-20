@@ -17,7 +17,7 @@ type DifficultyFilter = ProjectDifficulty | "all";
 
 export default function ProjectsPage() {
   const isDone = useProgressStore((s) => s.isDone);
-  const isLocked = useProgressStore((s) => s.isLocked);
+  const isModuleWeekLocked = useProgressStore((s) => s.isModuleWeekLocked);
 
   const [filterWeek, setFilterWeek] = useState<number | "all">("all");
   const [filterDifficulty, setFilterDifficulty] = useState<DifficultyFilter>("all");
@@ -109,7 +109,8 @@ export default function ProjectsPage() {
         >
           {filtered.map((project, i) => {
             const locked =
-              project.weekId !== PORTFOLIO_WEEK_ID && isLocked(project.weekId);
+              project.weekId !== PORTFOLIO_WEEK_ID &&
+              isModuleWeekLocked("projects", project.weekId);
             const complete = isDone(`${project.id}-complete`);
 
             return (

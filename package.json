@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "build:learning": "node scripts/learning-engine/build.mjs",
+    "assets:webp": "node scripts/convert-assets-to-webp.mjs",
     "start": "next start",
     "lint": "next lint"
   },
@@ -46,5 +47,8 @@
     "tailwindcss": "^4.3.1",
     "typescript": "^6.0.3",
     "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.2"
   }
 }

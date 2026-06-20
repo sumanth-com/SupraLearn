@@ -20,6 +20,7 @@ export interface ExportedProgress {
   todayGoal: string;
   todayGoalDate: string;
   todayGoalCompleted: boolean;
+  resumePosition?: unknown;
 }
 
 export function parseImportedProgress(raw: string): ExportedProgress {

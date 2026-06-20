@@ -1,7 +1,11 @@
 import type { CurriculumWeekDefinition } from "@/curriculum/types";
 import { collectTrackableEntities, getEntityIdsByType } from "@/curriculum/entities";
 import type { UserProgressState } from "@/store/progress-types";
-import { UNLOCK_ALL_WEEKS } from "@/lib/feature-flags";
+import {
+  getModuleCurrentWeek,
+  isModuleWeekCompleted,
+  isModuleWeekLocked,
+} from "@/lib/module-progress";
 
 export interface ProgressCounts {
   completed: number;
@@ -155,19 +159,15 @@ export function computeGlobalStats(
 }
 
 export function isWeekLocked(weekId: number, progress: UserProgressState): boolean {
-  if (UNLOCK_ALL_WEEKS) return false;
-  return !progress.unlockedWeekIds.includes(weekId);
+  return isModuleWeekLocked("roadmap", weekId, progress);
 }
 
 export function isWeekCompleted(weekId: number, progress: UserProgressState): boolean {
-  return progress.completedWeekIds.includes(weekId);
+  return isModuleWeekCompleted("roadmap", weekId, progress);
 }
 
 export function getCurrentWeekId(weeks: CurriculumWeekDefinition[], progress: UserProgressState): number {
-  const incomplete = weeks.find(
-    (w) => progress.unlockedWeekIds.includes(w.id) && !progress.completedWeekIds.includes(w.id)
-  );
-  return incomplete?.id ?? weeks[weeks.length - 1]?.id ?? 1;
+  return getModuleCurrentWeek("roadmap", progress, weeks.length);
 }
 
 export function getTodayProgress(

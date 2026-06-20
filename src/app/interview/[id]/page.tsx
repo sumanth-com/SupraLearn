@@ -11,7 +11,9 @@ import {
   countInterviewItems,
 } from "@/components/shared/interview-week-content";
 import { WeekDetailShell } from "@/components/shared/week-detail-shell";
+import { LockedWeekMessage } from "@/components/shared/locked-week-message";
 import { Button } from "@/components/ui/button";
+import { useTrackResumePosition } from "@/hooks/use-resume-position";
 
 export default function InterviewWeekPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -23,7 +25,9 @@ export default function InterviewWeekPage({ params }: { params: Promise<{ id: st
   const packs = useMemo(() => getSupplementalInterviewPacks(), []);
   const pack = isPack ? packs.find((p) => p.id === id) : undefined;
 
-  const isLocked = useProgressStore((s) => (!isPack && weekId ? s.isLocked(weekId) : false));
+  const isLocked = useProgressStore((s) =>
+    !isPack && weekId ? s.isModuleWeekLocked("interview", weekId) : false
+  );
   const isDone = useProgressStore((s) => s.isDone);
   const toggleComplete = useProgressStore((s) => s.toggleComplete);
   const getNote = useProgressStore((s) => s.getNote);
@@ -37,6 +41,15 @@ export default function InterviewWeekPage({ params }: { params: Promise<{ id: st
   const done = countInterviewDone(categories, isDone);
   const progressPct = total ? Math.round((done / total) * 100) : 0;
   const displayPct = !isPack && week ? (weekProgress?.interview.percentage ?? progressPct) : progressPct;
+
+  useTrackResumePosition(
+    "interview",
+    weekId,
+    title,
+    isPack ? "Supplemental pack" : `Week ${weekId}`,
+    `/interview/${id}`,
+    !isPack && Boolean(week) && !isLocked
+  );
 
   const notFound = isPack ? !pack : !week;
 
@@ -55,12 +68,10 @@ export default function InterviewWeekPage({ params }: { params: Promise<{ id: st
 
   if (!isPack && week && isLocked) {
     return (
-      <div className="py-20 text-center">
-        <h2 className="text-xl font-semibold text-zinc-400">This week is locked</h2>
-        <Link href="/interview">
-          <Button className="mt-4" variant="secondary">
-            Back to Interview
-          </Button>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
+        <LockedWeekMessage module="interview" weekId={weekId} />
+        <Link href="/interview" className="mt-6">
+          <Button variant="secondary">Back to Interview</Button>
         </Link>
       </div>
     );

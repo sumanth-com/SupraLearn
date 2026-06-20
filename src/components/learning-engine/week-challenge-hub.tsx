@@ -2,14 +2,10 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, Star } from "lucide-react";
+import { Bookmark, ChevronRight, Star } from "lucide-react";
 import type { LearnDifficulty, LearnLesson, LearnWeekBundle } from "@/learning-engine/types";
 import { lessonEntityId } from "@/learning-engine/types";
-import {
-  DIFFICULTY_LABELS,
-  problemTypeLabel,
-  weekProgress,
-} from "@/learning-engine/labels";
+import { DIFFICULTY_LABELS, problemTypeLabel, weekProgress } from "@/learning-engine/labels";
 import { categoryLabel } from "@/components/learning-engine/lesson-renderer";
 import { useProgressStore } from "@/store/use-progress-store";
 import { Button } from "@/components/ui/button";
@@ -22,6 +18,8 @@ interface ChallengeItem {
   lesson: LearnLesson;
   topicSlug: string;
   topicTitle: string;
+  topicIndex: number;
+  lessonIndex: number;
   entityId: string;
 }
 
@@ -83,80 +81,78 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
   const [page, setPage] = useState(0);
   const [showSolved, setShowSolved] = useState(true);
   const [showUnsolved, setShowUnsolved] = useState(true);
+  const [bookmarkedOnly, setBookmarkedOnly] = useState(false);
   const [diffEasy, setDiffEasy] = useState(true);
   const [diffMedium, setDiffMedium] = useState(true);
   const [diffHard, setDiffHard] = useState(true);
-  const [skillFilters, setSkillFilters] = useState<Record<string, boolean>>({});
 
   const isDoneFn = useProgressStore((s) => s.isDone);
+  const isBookmarkedFn = useProgressStore((s) => s.isBookmarked);
+  const toggleBookmark = useProgressStore((s) => s.toggleBookmark);
 
   const allChallenges = useMemo<ChallengeItem[]>(() => {
-    return week.topics.flatMap((bundle) =>
-      bundle.lessons.map((lesson) => ({
-        lesson,
-        topicSlug: bundle.topic.slug,
-        topicTitle: bundle.topic.title,
-        entityId: lessonEntityId({
-          weekId: week.weekId,
+    return week.topics.flatMap((bundle, topicIndex) =>
+      bundle.lessons
+        .filter((lesson) => (!lesson.weekId || lesson.weekId === week.weekId) && lesson.problemType !== "mcq")
+        .map((lesson, lessonIndex) => ({
+          lesson,
           topicSlug: bundle.topic.slug,
-          id: lesson.id,
-        }),
-      }))
+          topicTitle: bundle.topic.title,
+          topicIndex,
+          lessonIndex,
+          entityId: lessonEntityId({
+            weekId: week.weekId,
+            topicSlug: bundle.topic.slug,
+            id: lesson.id,
+          }),
+        }))
     );
   }, [week]);
 
-  const skillOptions = useMemo(() => {
-    const set = new Set<string>();
-    for (const c of allChallenges) {
-      set.add(c.lesson.problemType ?? "logic");
-    }
-    return Array.from(set).sort();
-  }, [allChallenges]);
-
-  const activeSkills = useMemo(() => {
-    const defaults = Object.fromEntries(skillOptions.map((s) => [s, true]));
-    return { ...defaults, ...skillFilters };
-  }, [skillOptions, skillFilters]);
-
   const progress = useMemo(() => weekProgress(week, isDoneFn), [week, isDoneFn]);
 
-  const filtered = useMemo(() => {
-    return allChallenges.filter((c) => {
+  const filteredAndSorted = useMemo(() => {
+    const byDifficultyRank: Record<LearnDifficulty, number> = { easy: 0, medium: 1, hard: 2 };
+
+    const filtered = allChallenges.filter((c) => {
       if (activeTopic !== "all" && c.topicSlug !== activeTopic) return false;
 
       const done = isDoneFn(c.entityId);
       if (done && !showSolved) return false;
       if (!done && !showUnsolved) return false;
 
+      if (bookmarkedOnly && !isBookmarkedFn(c.entityId)) return false;
+
       const d = c.lesson.difficulty;
       if (d === "easy" && !diffEasy) return false;
       if (d === "medium" && !diffMedium) return false;
       if (d === "hard" && !diffHard) return false;
 
-      const skill = c.lesson.problemType ?? "logic";
-      if (activeSkills[skill] === false) return false;
-
       return true;
     });
+
+    return [...filtered].sort((a, b) => {
+      if (a.topicIndex !== b.topicIndex) return a.topicIndex - b.topicIndex;
+      const da = byDifficultyRank[a.lesson.difficulty];
+      const db = byDifficultyRank[b.lesson.difficulty];
+      if (da !== db) return da - db;
+      return a.lessonIndex - b.lessonIndex;
+    });
   }, [
-    allChallenges,
     activeTopic,
+    allChallenges,
+    bookmarkedOnly,
+    diffEasy,
+    diffHard,
+    diffMedium,
+    isBookmarkedFn,
     isDoneFn,
     showSolved,
     showUnsolved,
-    diffEasy,
-    diffMedium,
-    diffHard,
-    activeSkills,
   ]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const pageItems = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-
-  const toggleSkill = (skill: string, value: boolean) => {
-    setSkillFilters((prev) => ({ ...prev, [skill]: value }));
-    setPage(0);
-  };
+  const totalPages = Math.max(1, Math.ceil(filteredAndSorted.length / PAGE_SIZE));
+  const pageItems = filteredAndSorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   const selectTopic = (slug: string) => {
     setActiveTopic(slug);
@@ -176,11 +172,20 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
         <span className="text-zinc-400">Week {week.weekId}</span>
       </nav>
 
+      <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs text-emerald-300">
+        Showing challenges for <strong className="font-semibold">Week {week.weekId} — {week.title}</strong> only.
+        Other weeks are not included on this page.
+      </div>
+
       {/* Header */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <span className="rounded-md bg-violet-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-violet-300 ring-1 ring-violet-500/25">
+              Week {week.weekId}
+            </span>
+          </div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-50 sm:text-3xl">{week.title}</h1>
-          <p className="mt-1 max-w-xl text-sm text-zinc-500">{week.description}</p>
         </div>
         <div className="w-full shrink-0 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 lg:w-72">
           <p className="text-xs text-zinc-400">
@@ -199,7 +204,7 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
       </div>
 
       {/* Topic tabs */}
-      <div className="flex gap-6 overflow-x-auto border-b border-zinc-800">
+      <div className="flex gap-6 overflow-x-auto border-b border-zinc-800 pb-1">
         <button
           type="button"
           onClick={() => selectTopic("all")}
@@ -240,7 +245,21 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
             pageItems.map((item, i) => {
               const { lesson, topicSlug, topicTitle, entityId } = item;
               const done = isDoneFn(entityId);
+              const bookmarked = isBookmarkedFn(entityId);
               const isFirst = page === 0 && i === 0;
+              const globalIndex = page * PAGE_SIZE + i + 1;
+              const challengeNumber = globalIndex.toString().padStart(3, "0");
+              const estimatedMinutes = lesson.estimatedMinutes ?? (lesson.difficulty === "easy" ? 8 : lesson.difficulty === "medium" ? 15 : 25);
+              const xpPoints = estimatedMinutes * (lesson.difficulty === "easy" ? 2 : lesson.difficulty === "medium" ? 3 : 4);
+              const successRate =
+                "successRate" in lesson && typeof (lesson as any).successRate === "number"
+                  ? (lesson as any).successRate
+                  : lesson.difficulty === "easy"
+                    ? 82
+                    : lesson.difficulty === "medium"
+                      ? 67
+                      : 41;
+
               return (
                 <article
                   key={entityId}
@@ -248,26 +267,42 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-start gap-2">
+                      <div className="flex items-start gap-3">
                         <button
                           type="button"
-                          className="mt-0.5 shrink-0 text-zinc-600 hover:text-amber-400"
-                          aria-label="Bookmark"
+                          onClick={() => toggleBookmark(entityId)}
+                          className={cn(
+                            "mt-0.5 shrink-0 rounded-full border border-zinc-800 p-1 transition-colors",
+                            bookmarked ? "border-amber-400/60 bg-amber-500/10" : "hover:border-amber-500/60"
+                          )}
+                          aria-label={bookmarked ? "Remove bookmark" : "Bookmark challenge"}
                         >
-                          <Star className="h-4 w-4" />
+                          {bookmarked ? (
+                            <Bookmark className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                          ) : (
+                            <Star className="h-3.5 w-3.5 text-zinc-500" />
+                          )}
                         </button>
                         <div className="min-w-0">
-                          <h2 className="text-base font-semibold text-zinc-100">{lesson.title}</h2>
+                          <div className="flex items-center gap-2 text-[11px] font-mono text-zinc-500">
+                            <span className="rounded bg-zinc-800/70 px-1.5 py-0.5 text-[10px] text-zinc-300">
+                              #{challengeNumber}
+                            </span>
+                            <span>{topicTitle}</span>
+                          </div>
+                          <h2 className="mt-1 text-base font-semibold text-zinc-100">{lesson.title}</h2>
                           <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-zinc-500">
-                            <span className={cn("font-medium", DIFFICULTY_COLORS[lesson.difficulty])}>
+                            <span className={cn("font-semibold", DIFFICULTY_COLORS[lesson.difficulty])}>
                               {DIFFICULTY_LABELS[lesson.difficulty]}
                             </span>
                             <span>|</span>
-                            <span>{topicTitle}</span>
-                            <span>|</span>
                             <span>{problemTypeLabel(lesson.problemType)}</span>
                             <span>|</span>
-                            <span>Est. {lesson.estimatedMinutes ?? 10} min</span>
+                            <span>Est. {estimatedMinutes} min</span>
+                            <span>|</span>
+                            <span>{xpPoints} XP</span>
+                            <span>|</span>
+                            <span className="text-emerald-400 tabular-nums">{successRate}% success</span>
                             {done && (
                               <>
                                 <span>|</span>
@@ -275,6 +310,17 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
                               </>
                             )}
                           </p>
+                          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                            {Array.isArray((lesson as any).companyTags) &&
+                              (lesson as any).companyTags.slice(0, 3).map((tag: string) => (
+                                <span
+                                  key={tag}
+                                  className="rounded-full bg-violet-500/10 px-2 py-0.5 text-[10px] font-medium text-violet-300 ring-1 ring-violet-500/30"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                          </div>
                           <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-zinc-400">
                             {lesson.problemStatement?.split("\n")[0] ??
                               lesson.description ??
@@ -332,22 +378,12 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
           )}
         </div>
 
-        {/* Filter sidebar */}
-        <aside className="w-full shrink-0 space-y-4 rounded-xl border border-zinc-800 bg-zinc-900/30 p-4 lg:w-56">
+        {/* Filter sidebar — sticky while scrolling */}
+        <aside className="w-full shrink-0 space-y-4 rounded-xl border border-zinc-800 bg-zinc-900/30 p-4 lg:sticky lg:top-6 lg:w-64 lg:self-start">
           <FilterSection title="Status">
             <FilterCheckbox label="Solved" checked={showSolved} onChange={setShowSolved} />
             <FilterCheckbox label="Unsolved" checked={showUnsolved} onChange={setShowUnsolved} />
-          </FilterSection>
-
-          <FilterSection title="Skills">
-            {skillOptions.map((skill) => (
-              <FilterCheckbox
-                key={skill}
-                label={problemTypeLabel(skill)}
-                checked={activeSkills[skill] !== false}
-                onChange={(v) => toggleSkill(skill, v)}
-              />
-            ))}
+            <FilterCheckbox label="Bookmarked only" checked={bookmarkedOnly} onChange={setBookmarkedOnly} />
           </FilterSection>
 
           <FilterSection title="Difficulty">

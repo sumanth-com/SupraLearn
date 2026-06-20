@@ -11,9 +11,11 @@ import {
   getProfessionalAiSkill,
   isProfessionalAiWeek,
 } from "@/curriculum/ai-skills-professional";
+import { LockedWeekMessage } from "@/components/shared/locked-week-message";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { useTrackResumePosition } from "@/hooks/use-resume-position";
 
 export default function AISkillWeekPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -21,7 +23,8 @@ export default function AISkillWeekPage({ params }: { params: Promise<{ id: stri
   const isProfessional = isProfessionalAiWeek(weekId);
   const curriculumWeek = useCurriculumWeek(isProfessional ? 1 : weekId);
   const weekProgress = useWeekProgress(isProfessional ? 1 : weekId);
-  const isLocked = useProgressStore((s) => s.isLocked(weekId));
+  const isModuleLocked = useProgressStore((s) => s.isModuleWeekLocked("ai-skills", weekId));
+  const isLocked = !isProfessional && isModuleLocked;
   const isDone = useProgressStore((s) => s.isDone);
   const toggleComplete = useProgressStore((s) => s.toggleComplete);
   const getNote = useProgressStore((s) => s.getNote);
@@ -34,6 +37,17 @@ export default function AISkillWeekPage({ params }: { params: Promise<{ id: stri
     const stats = getAiSkillStats(skill, isDone);
     return stats.overallPct;
   }, [isProfessional, skill, isDone]);
+
+  const displayTitle = skill?.title.replace(/^AI Skill of the Week — /, "") ?? "AI Skills";
+
+  useTrackResumePosition(
+    "ai-skills",
+    weekId,
+    displayTitle,
+    isProfessional ? "Professional track" : `Week ${weekId}`,
+    `/ai-skills/${weekId}`,
+    Boolean(skill) && !isProfessional && !isLocked
+  );
 
   if (!skill || (!isProfessional && !curriculumWeek)) {
     return (
@@ -50,20 +64,16 @@ export default function AISkillWeekPage({ params }: { params: Promise<{ id: stri
 
   if (!isProfessional && isLocked) {
     return (
-      <div className="py-20 text-center">
-        <h2 className="text-xl font-semibold text-zinc-400">This week is locked</h2>
-        <p className="mt-2 text-zinc-500">Complete the previous week to unlock AI skills.</p>
-        <Link href="/ai-skills">
-          <Button className="mt-4" variant="secondary">
-            Back to AI Skills
-          </Button>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
+        <LockedWeekMessage module="ai-skills" weekId={weekId} />
+        <Link href="/ai-skills" className="mt-6">
+          <Button variant="secondary">Back to AI Skills</Button>
         </Link>
       </div>
     );
   }
 
   const aiPct = isProfessional ? professionalPct : (weekProgress?.ai.percentage ?? 0);
-  const displayTitle = skill.title.replace(/^AI Skill of the Week — /, "");
   const stats = getAiSkillStats(skill, isDone);
 
   return (

@@ -32,7 +32,7 @@ export default function AISkillsPage() {
   const weeks = useCurriculum();
   const professionalSkill = getProfessionalAiSkill();
   const isDone = useProgressStore((s) => s.isDone);
-  const isLocked = useProgressStore((s) => s.isLocked);
+  const isModuleWeekLocked = useProgressStore((s) => s.isModuleWeekLocked);
   const getWeekProgress = useProgressStore((s) => s.getWeekProgress);
 
   const [filterWeek, setFilterWeek] = useState<number | "all">("all");
@@ -43,7 +43,7 @@ export default function AISkillsPage() {
         weekId: w.id,
         title: w.title,
         skill: w.aiSkill,
-        locked: isLocked(w.id),
+        locked: isModuleWeekLocked("ai-skills", w.id),
         progress: getWeekProgress(w.id).ai.percentage,
       })),
       {
@@ -58,7 +58,7 @@ export default function AISkillsPage() {
         })(),
       },
     ],
-    [weeks, isLocked, getWeekProgress, professionalSkill, isDone]
+    [weeks, isModuleWeekLocked, getWeekProgress, professionalSkill, isDone]
   );
 
   const visibleModules =

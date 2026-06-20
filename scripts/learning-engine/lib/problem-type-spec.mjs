@@ -32,6 +32,26 @@ export const PROBLEM_TYPE_LABELS = {
   terminal: "Terminal Workflow",
 };
 
+/** Week 1 fundamentals — topic-relevant only, no patterns/leetcode/company filler */
+export const WEEK1_FUNDAMENTALS_QUOTAS = {
+  easy: [
+    { type: "output-prediction", count: 4 },
+    { type: "logic", count: 11 },
+    { type: "find-bug", count: 3 },
+  ],
+  medium: [
+    { type: "logic", count: 8 },
+    { type: "output-prediction", count: 4 },
+    { type: "dry-run", count: 4 },
+    { type: "interview", count: 3 },
+  ],
+  hard: [
+    { type: "logic", count: 8 },
+    { type: "interview", count: 5 },
+    { type: "find-bug", count: 3 },
+  ],
+};
+
 /** Default ~20 problems per difficulty for most topics */
 export const DEFAULT_QUOTAS = {
   easy: [
@@ -39,7 +59,7 @@ export const DEFAULT_QUOTAS = {
     { type: "logic", count: 6 },
     { type: "output-prediction", count: 3 },
     { type: "find-bug", count: 3 },
-    { type: "mcq", count: 2 },
+    { type: "logic", count: 8 },
   ],
   medium: [
     { type: "logic", count: 6 },
@@ -99,8 +119,7 @@ export const SQL_QUOTAS = {
   easy: [
     { type: "select", count: 8 },
     { type: "insert", count: 6 },
-    { type: "output-prediction", count: 3 },
-    { type: "mcq", count: 3 },
+    { type: "output-prediction", count: 6 },
   ],
   medium: [
     { type: "join", count: 8 },
@@ -140,7 +159,7 @@ export const BACKEND_QUOTAS = {
     { type: "controller", count: 6 },
     { type: "logic", count: 6 },
     { type: "output-prediction", count: 4 },
-    { type: "mcq", count: 4 },
+    { type: "logic", count: 10 },
   ],
   medium: [
     { type: "service", count: 8 },
@@ -154,61 +173,102 @@ export const BACKEND_QUOTAS = {
   ],
 };
 
-export function getQuotasForTopic(slug, category) {
-  if (slug === "for-loop") return FOR_LOOP_QUOTAS;
-  if (slug === "while-loop") return WHILE_LOOP_QUOTAS;
-  if (category === "sql" || category === "database-design") return SQL_QUOTAS;
-  if (category === "dsa") return DSA_QUOTAS;
-  if (["rest-api", "spring-boot", "jdbc", "hibernate", "security", "mongodb"].includes(category)) {
-    return BACKEND_QUOTAS;
+export const WEEK_LESSON_TARGETS = { easy: 20, medium: 20, hard: 20 };
+
+/** Split N lessons across topics so each week totals exactly 20 easy + 20 medium + 20 hard */
+export function distributeAcrossTopics(total, topicIndex, topicCount) {
+  if (topicCount <= 0) return 0;
+  const base = Math.floor(total / topicCount);
+  const remainder = total % topicCount;
+  return base + (topicIndex < remainder ? 1 : 0);
+}
+
+function splitTypes(count, types) {
+  if (count <= 0) return [];
+  if (types.length === 1) return [{ type: types[0], count }];
+  const per = Math.floor(count / types.length);
+  let rem = count % types.length;
+  const out = [];
+  for (const type of types) {
+    const c = per + (rem > 0 ? 1 : 0);
+    if (rem > 0) rem--;
+    if (c > 0) out.push({ type, count: c });
   }
+  return out;
+}
+
+function bucket(count, type) {
+  return count > 0 ? [{ type, count }] : [];
+}
+
+export function getQuotasForTopic(slug, category, topicIndex = 0, topicCount = 1) {
+  const easy = distributeAcrossTopics(WEEK_LESSON_TARGETS.easy, topicIndex, topicCount);
+  const medium = distributeAcrossTopics(WEEK_LESSON_TARGETS.medium, topicIndex, topicCount);
+  const hard = distributeAcrossTopics(WEEK_LESSON_TARGETS.hard, topicIndex, topicCount);
+
+  if (slug === "for-loop" || slug === "while-loop") {
+    return {
+      easy: bucket(easy, "pattern"),
+      medium: [
+        ...bucket(Math.ceil(medium / 2), "pattern"),
+        ...bucket(Math.floor(medium / 2), "nested-pattern"),
+      ],
+      hard: bucket(hard, "leetcode"),
+    };
+  }
+
+  if (category === "dsa") {
+    return {
+      easy: bucket(easy, "logic"),
+      medium: bucket(medium, "interview"),
+      hard: bucket(hard, "leetcode"),
+    };
+  }
+
+  if (category === "sql" || category === "database-design") {
+    return {
+      easy: bucket(easy, "select"),
+      medium: bucket(medium, "join"),
+      hard: bucket(hard, "transaction"),
+    };
+  }
+
+  if (["rest-api", "spring-boot", "jdbc", "hibernate", "security", "mongodb"].includes(category)) {
+    return {
+      easy: bucket(easy, "controller"),
+      medium: bucket(medium, "service"),
+      hard: bucket(hard, "leetcode"),
+    };
+  }
+
   if (category === "git") {
     return {
-      easy: [
-        { type: "terminal", count: 8 },
-        { type: "logic", count: 6 },
-        { type: "mcq", count: 4 },
-        { type: "output-prediction", count: 2 },
-      ],
-      medium: [
-        { type: "terminal", count: 10 },
-        { type: "interview", count: 6 },
-        { type: "debugging", count: 4 },
-      ],
-      hard: [
-        { type: "company", count: 8 },
-        { type: "optimization", count: 7 },
-        { type: "debugging", count: 5 },
-      ],
+      easy: bucket(easy, "terminal"),
+      medium: bucket(medium, "terminal"),
+      hard: bucket(hard, "debugging"),
     };
   }
+
   if (category === "ai") {
     return {
-      easy: [
-        { type: "prompt", count: 8 },
-        { type: "logic", count: 6 },
-        { type: "mcq", count: 4 },
-        { type: "output-prediction", count: 2 },
-      ],
-      medium: [
-        { type: "prompt", count: 10 },
-        { type: "interview", count: 6 },
-        { type: "debugging", count: 4 },
-      ],
-      hard: [
-        { type: "company", count: 8 },
-        { type: "optimization", count: 7 },
-        { type: "leetcode", count: 5 },
-      ],
+      easy: bucket(easy, "prompt"),
+      medium: bucket(medium, "prompt"),
+      hard: bucket(hard, "optimization"),
     };
   }
-  return DEFAULT_QUOTAS;
+
+  // Java, OOP, collections, java8, multithreading — topic-matched mix
+  return {
+    easy: splitTypes(easy, ["output-prediction", "logic"]),
+    medium: splitTypes(medium, ["logic", "dry-run", "interview"]),
+    hard: splitTypes(hard, ["logic", "interview", "find-bug"]),
+  };
 }
 
 export function estimatedMinutes(difficulty, problemType) {
   const base = difficulty === "easy" ? 8 : difficulty === "medium" ? 15 : 25;
   const bonus =
-    problemType === "mcq" || problemType === "output-prediction"
+    problemType === "output-prediction"
       ? -3
       : problemType === "leetcode" || problemType === "company"
         ? 10

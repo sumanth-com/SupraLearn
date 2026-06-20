@@ -10,7 +10,7 @@ import { useProgressStore } from "@/store/use-progress-store";
 
 function WeekLearnContent({ weekId }: { weekId: number }) {
   const week = getLearningWeek(weekId);
-  const isLocked = useProgressStore((s) => s.isLocked(weekId));
+  const isLocked = useProgressStore((s) => s.isModuleWeekLocked("practice", weekId));
 
   if (!week) {
     return (
@@ -32,7 +32,9 @@ function WeekLearnContent({ weekId }: { weekId: number }) {
           <Lock className="h-6 w-6 text-zinc-500" />
         </div>
         <h2 className="text-lg font-semibold text-zinc-300">Week {weekId} is locked</h2>
-        <p className="mt-2 max-w-sm text-sm text-zinc-500">Complete the previous week to unlock this module.</p>
+        <p className="mt-2 max-w-sm text-sm text-zinc-500">
+          Complete Practice Week {weekId - 1} to unlock this week.
+        </p>
         <Link href="/roadmap">
           <Button className="mt-6" variant="secondary">
             Back to Roadmap

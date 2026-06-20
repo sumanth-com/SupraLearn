@@ -19,7 +19,7 @@ export default function InterviewPage() {
   const weeks = useCurriculum();
   const supplementalPacks = useMemo(() => getSupplementalInterviewPacks(), []);
   const isDone = useProgressStore((s) => s.isDone);
-  const isLocked = useProgressStore((s) => s.isLocked);
+  const isModuleWeekLocked = useProgressStore((s) => s.isModuleWeekLocked);
   const getWeekProgress = useProgressStore((s) => s.getWeekProgress);
 
   const [filterWeek, setFilterWeek] = useState<number | "all" | "api" | "db">("all");
@@ -99,7 +99,7 @@ export default function InterviewPage() {
             value={filterWeek}
             onChange={setFilterWeek}
             options={weekOptions}
-            className="w-auto max-w-[11rem]"
+            className="w-[148px] shrink-0"
           />
           <span className="text-xs text-zinc-500 sm:ml-auto">
             {interviewWeeks.length + supplementalPacks.length} sets
@@ -109,7 +109,7 @@ export default function InterviewPage() {
 
       <CardGrid className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {visibleWeeks.map((week, i) => {
-          const locked = isLocked(week.id);
+          const locked = isModuleWeekLocked("interview", week.id);
           const wp = getWeekProgress(week.id);
           const total = countInterviewItems(week.interviewQuestions);
           const done = countInterviewDone(week.interviewQuestions, isDone);

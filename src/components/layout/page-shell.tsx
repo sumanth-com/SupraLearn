@@ -18,15 +18,16 @@ export function PageShell({
 }: PageShellProps) {
   if (!scroll) {
     return (
-      <div className="-mx-4 -my-8 flex h-dvh max-h-dvh flex-col overflow-hidden sm:-mx-6 lg:-mx-8 lg:-my-10">
-        <header className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-800/80 px-4 py-3 sm:px-6 lg:px-8">
+      <div className="-mx-4 -my-5 flex h-[calc(100dvh-2.5rem)] max-h-[calc(100dvh-2.5rem)] flex-col overflow-hidden sm:-mx-6 lg:-mx-8">
+        <header className="flex shrink-0 items-center justify-between gap-6 px-4 pb-4 pt-1 sm:px-6 lg:px-8">
           <div className="min-w-0">
             <h1 className="text-xl font-bold tracking-tight text-zinc-50 sm:text-2xl">{title}</h1>
-            {subtitle && <p className="mt-0.5 text-sm text-zinc-400">{subtitle}</p>}
+            {subtitle && <p className="mt-1 text-sm text-zinc-500">{subtitle}</p>}
           </div>
           {headerRight && <div className="shrink-0">{headerRight}</div>}
         </header>
-        <div className="min-h-0 flex-1 overflow-hidden px-4 py-4 sm:px-6 lg:px-8">{children}</div>
+        <div className="mx-4 mb-1 h-px shrink-0 bg-zinc-800/60 sm:mx-6 lg:mx-8" />
+        <div className="min-h-0 flex-1 overflow-hidden px-4 pb-3 pt-4 sm:px-6 lg:px-8">{children}</div>
       </div>
     );
   }

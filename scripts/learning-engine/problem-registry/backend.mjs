@@ -599,9 +599,9 @@ function ensureCount(problemsByDifficulty, slug) {
   }
 }
 
-/** Expand base 3-problem tiers to full quota (20+ per difficulty) with unique variants */
-function expandProblemBank(base, slug, category, mapFn) {
-  const quotas = getQuotasForTopic(slug, category);
+/** Expand base tiers to per-week quota (20 easy + 20 medium + 20 hard per week) */
+function expandProblemBank(base, slug, category, mapFn, topicIndex = 0, topicCount = 1) {
+  const quotas = getQuotasForTopic(slug, category, topicIndex, topicCount);
   const out = { easy: [], medium: [], hard: [] };
   for (const level of LEVELS) {
     const tier = base[level] ?? [];
@@ -658,31 +658,31 @@ function expandSql(base, ctx) {
 }
 
 const TOPIC_HANDLERS = {
-  "sql-select": (weekId, slug) => {
+  "sql-select": (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = sqlProblems(slug);
     ensureCount(base, slug);
-    const p = expandProblemBank(base, slug, "sql", expandSql);
+    const p = expandProblemBank(base, slug, "sql", expandSql, topicIndex, topicCount);
     return buildSqlLessons(weekId, slug, p);
   },
-  "sql-joins": (weekId, slug) => {
+  "sql-joins": (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = sqlProblems(slug);
     ensureCount(base, slug);
-    const p = expandProblemBank(base, slug, "sql", expandSql);
+    const p = expandProblemBank(base, slug, "sql", expandSql, topicIndex, topicCount);
     return buildSqlLessons(weekId, slug, p);
   },
-  "sql-aggregations": (weekId, slug) => {
+  "sql-aggregations": (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = sqlProblems(slug);
     ensureCount(base, slug);
-    const p = expandProblemBank(base, slug, "sql", expandSql);
+    const p = expandProblemBank(base, slug, "sql", expandSql, topicIndex, topicCount);
     return buildSqlLessons(weekId, slug, p);
   },
-  transactions: (weekId, slug) => {
+  transactions: (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = sqlProblems(slug);
     ensureCount(base, slug);
-    const p = expandProblemBank(base, slug, "sql", expandSql);
+    const p = expandProblemBank(base, slug, "sql", expandSql, topicIndex, topicCount);
     return buildSqlLessons(weekId, slug, p);
   },
-  normalization: (weekId, slug) => {
+  normalization: (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = dbDesignProblems(slug);
     ensureCount(base, slug);
     const p = expandProblemBank(base, slug, "database-design", (b, ctx) => ({
@@ -691,10 +691,10 @@ const TOPIC_HANDLERS = {
       problemType: ctx.type,
       estimatedMinutes: estMinutes(ctx.level, ctx.type),
       title: `${b.title} (${ctx.type} #${ctx.index + 1})`,
-    }));
+    }), topicIndex, topicCount);
     return buildDbDesignLessons(weekId, slug, p);
   },
-  indexes: (weekId, slug) => {
+  indexes: (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = dbDesignProblems(slug);
     ensureCount(base, slug);
     const p = expandProblemBank(base, slug, "database-design", (b, ctx) => ({
@@ -703,14 +703,14 @@ const TOPIC_HANDLERS = {
       problemType: ctx.type,
       estimatedMinutes: estMinutes(ctx.level, ctx.type),
       title: `${b.title} (${ctx.type} #${ctx.index + 1})`,
-    }));
+    }), topicIndex, topicCount);
     return buildDbDesignLessons(weekId, slug, p);
   },
-  jdbc: (weekId, slug) => {
-    const p = generateCuratedProblems(slug, TOPIC_TITLES[slug], "jdbc");
+  jdbc: (weekId, slug, topicIndex = 0, topicCount = 1) => {
+    const p = generateCuratedProblems(slug, TOPIC_TITLES[slug], "jdbc", topicIndex, topicCount);
     return buildJdbcLessons(weekId, slug, p);
   },
-  mongodb: (weekId, slug) => {
+  mongodb: (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = mongoProblems(slug);
     ensureCount(base, slug);
     const p = expandProblemBank(base, slug, "mongodb", (b, ctx) => ({
@@ -719,26 +719,26 @@ const TOPIC_HANDLERS = {
       problemType: ctx.type,
       estimatedMinutes: estMinutes(ctx.level, ctx.type),
       title: `${b.title} (${ctx.type} #${ctx.index + 1})`,
-    }));
+    }), topicIndex, topicCount);
     return buildMongoLessons(weekId, slug, p);
   },
-  "spring-core": (weekId, slug) => {
-    const p = generateCuratedProblems(slug, TOPIC_TITLES[slug], "spring-boot");
+  "spring-core": (weekId, slug, topicIndex = 0, topicCount = 1) => {
+    const p = generateCuratedProblems(slug, TOPIC_TITLES[slug], "spring-boot", topicIndex, topicCount);
     return buildSpringLessons(weekId, slug, p);
   },
-  "spring-boot": (weekId, slug) => {
-    const p = generateCuratedProblems(slug, TOPIC_TITLES[slug], "spring-boot");
+  "spring-boot": (weekId, slug, topicIndex = 0, topicCount = 1) => {
+    const p = generateCuratedProblems(slug, TOPIC_TITLES[slug], "spring-boot", topicIndex, topicCount);
     return buildSpringLessons(weekId, slug, p);
   },
-  "capstone-backend": (weekId, slug) => {
-    const p = generateCuratedProblems(slug, TOPIC_TITLES[slug], "spring-boot");
+  "capstone-backend": (weekId, slug, topicIndex = 0, topicCount = 1) => {
+    const p = generateCuratedProblems(slug, TOPIC_TITLES[slug], "spring-boot", topicIndex, topicCount);
     return buildSpringLessons(weekId, slug, p);
   },
-  "jpa-hibernate": (weekId, slug) => {
-    const p = generateCuratedProblems(slug, TOPIC_TITLES[slug], "hibernate");
+  "jpa-hibernate": (weekId, slug, topicIndex = 0, topicCount = 1) => {
+    const p = generateCuratedProblems(slug, TOPIC_TITLES[slug], "hibernate", topicIndex, topicCount);
     return buildHibernateLessons(weekId, slug, p);
   },
-  "rest-design": (weekId, slug) => {
+  "rest-design": (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = restProblems(slug);
     ensureCount(base, slug);
     const p = expandProblemBank(base, slug, "rest-api", (b, ctx) => ({
@@ -747,10 +747,10 @@ const TOPIC_HANDLERS = {
       problemType: ctx.type,
       estimatedMinutes: estMinutes(ctx.level, ctx.type),
       title: `${b.title} (${ctx.type} #${ctx.index + 1})`,
-    }));
+    }), topicIndex, topicCount);
     return buildRestLessons(weekId, slug, p);
   },
-  "validation-pagination": (weekId, slug) => {
+  "validation-pagination": (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = restProblems(slug);
     ensureCount(base, slug);
     const p = expandProblemBank(base, slug, "rest-api", (b, ctx) => ({
@@ -759,10 +759,10 @@ const TOPIC_HANDLERS = {
       problemType: ctx.type,
       estimatedMinutes: estMinutes(ctx.level, ctx.type),
       title: `${b.title} (${ctx.type} #${ctx.index + 1})`,
-    }));
+    }), topicIndex, topicCount);
     return buildRestLessons(weekId, slug, p);
   },
-  swagger: (weekId, slug) => {
+  swagger: (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = restProblems(slug);
     ensureCount(base, slug);
     const p = expandProblemBank(base, slug, "rest-api", (b, ctx) => ({
@@ -771,10 +771,10 @@ const TOPIC_HANDLERS = {
       problemType: ctx.type,
       estimatedMinutes: estMinutes(ctx.level, ctx.type),
       title: `${b.title} (${ctx.type} #${ctx.index + 1})`,
-    }));
+    }), topicIndex, topicCount);
     return buildRestLessons(weekId, slug, p);
   },
-  "spring-security": (weekId, slug) => {
+  "spring-security": (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = securityProblems(slug);
     ensureCount(base, slug);
     const p = expandProblemBank(base, slug, "security", (b, ctx) => ({
@@ -783,10 +783,10 @@ const TOPIC_HANDLERS = {
       problemType: ctx.type,
       estimatedMinutes: estMinutes(ctx.level, ctx.type),
       title: `${b.title} (${ctx.type} #${ctx.index + 1})`,
-    }));
+    }), topicIndex, topicCount);
     return buildSecurityLessons(weekId, slug, p);
   },
-  "jwt-auth": (weekId, slug) => {
+  "jwt-auth": (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = securityProblems(slug);
     ensureCount(base, slug);
     const p = expandProblemBank(base, slug, "security", (b, ctx) => ({
@@ -795,10 +795,10 @@ const TOPIC_HANDLERS = {
       problemType: ctx.type,
       estimatedMinutes: estMinutes(ctx.level, ctx.type),
       title: `${b.title} (${ctx.type} #${ctx.index + 1})`,
-    }));
+    }), topicIndex, topicCount);
     return buildSecurityLessons(weekId, slug, p);
   },
-  oauth: (weekId, slug) => {
+  oauth: (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = securityProblems(slug);
     ensureCount(base, slug);
     const p = expandProblemBank(base, slug, "security", (b, ctx) => ({
@@ -807,10 +807,10 @@ const TOPIC_HANDLERS = {
       problemType: ctx.type,
       estimatedMinutes: estMinutes(ctx.level, ctx.type),
       title: `${b.title} (${ctx.type} #${ctx.index + 1})`,
-    }));
+    }), topicIndex, topicCount);
     return buildSecurityLessons(weekId, slug, p);
   },
-  rbac: (weekId, slug) => {
+  rbac: (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = securityProblems(slug);
     ensureCount(base, slug);
     const p = expandProblemBank(base, slug, "security", (b, ctx) => ({
@@ -819,10 +819,10 @@ const TOPIC_HANDLERS = {
       problemType: ctx.type,
       estimatedMinutes: estMinutes(ctx.level, ctx.type),
       title: `${b.title} (${ctx.type} #${ctx.index + 1})`,
-    }));
+    }), topicIndex, topicCount);
     return buildSecurityLessons(weekId, slug, p);
   },
-  "git-workflow": (weekId, slug) => {
+  "git-workflow": (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = gitProblems(slug);
     ensureCount(base, slug);
     const p = expandProblemBank(base, slug, "git", (b, ctx) => ({
@@ -831,10 +831,10 @@ const TOPIC_HANDLERS = {
       problemType: ctx.type,
       estimatedMinutes: estMinutes(ctx.level, ctx.type),
       title: `${b.title} (${ctx.type} #${ctx.index + 1})`,
-    }));
+    }), topicIndex, topicCount);
     return buildGitLessons(weekId, slug, p);
   },
-  "github-portfolio": (weekId, slug) => {
+  "github-portfolio": (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = gitProblems(slug);
     ensureCount(base, slug);
     const p = expandProblemBank(base, slug, "git", (b, ctx) => ({
@@ -843,10 +843,10 @@ const TOPIC_HANDLERS = {
       problemType: ctx.type,
       estimatedMinutes: estMinutes(ctx.level, ctx.type),
       title: `${b.title} (${ctx.type} #${ctx.index + 1})`,
-    }));
+    }), topicIndex, topicCount);
     return buildGitLessons(weekId, slug, p);
   },
-  "mock-interview": (weekId, slug) => {
+  "mock-interview": (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = aiProblems(slug);
     ensureCount(base, slug);
     const p = expandProblemBank(base, slug, "ai", (b, ctx) => ({
@@ -855,10 +855,10 @@ const TOPIC_HANDLERS = {
       problemType: ctx.type,
       estimatedMinutes: estMinutes(ctx.level, ctx.type),
       title: `${b.title} (${ctx.type} #${ctx.index + 1})`,
-    }));
+    }), topicIndex, topicCount);
     return buildAiLessons(weekId, slug, p);
   },
-  "ai-coding": (weekId, slug) => {
+  "ai-coding": (weekId, slug, topicIndex = 0, topicCount = 1) => {
     const base = aiProblems(slug);
     ensureCount(base, slug);
     const p = expandProblemBank(base, slug, "ai", (b, ctx) => ({
@@ -867,7 +867,7 @@ const TOPIC_HANDLERS = {
       problemType: ctx.type,
       estimatedMinutes: estMinutes(ctx.level, ctx.type),
       title: `${b.title} (${ctx.type} #${ctx.index + 1})`,
-    }));
+    }), topicIndex, topicCount);
     return buildAiLessons(weekId, slug, p);
   },
 };
@@ -877,5 +877,7 @@ export function getBackendProblems(weekId, topic) {
   if (!slug) return [];
   const handler = TOPIC_HANDLERS[slug];
   if (!handler) return [];
-  return handler(weekId, slug);
+  const topicIndex = topic?.topicIndex ?? 0;
+  const topicCount = topic?.topicCount ?? 1;
+  return handler(weekId, slug, topicIndex, topicCount);
 }

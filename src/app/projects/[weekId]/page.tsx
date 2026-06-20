@@ -22,7 +22,7 @@ export default function ProjectWeekPage({ params }: { params: Promise<{ weekId: 
   const week = useCurriculumWeek(weekId);
   const weekProgress = useWeekProgress(weekId);
   const progress = useProgressStore((s) => s.progress);
-  const isLocked = useProgressStore((s) => s.isLocked(weekId));
+  const isLocked = useProgressStore((s) => s.isModuleWeekLocked("projects", weekId));
   const isDone = useProgressStore((s) => s.isDone);
 
   const listings = getAllProjectListings().filter((p) => p.weekId === weekId);

@@ -4,21 +4,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-  LayoutDashboard, Map, FolderGit2, Brain,
-  MessageSquare, BarChart3, StickyNote, User, Menu, X,
+  LayoutDashboard, Map, FolderGit2, Brain, Languages,
+  MessageSquare, StickyNote, User, Menu, X, ArrowUpRight,
 } from "lucide-react";
 import { SupraLearnLogo } from "@/components/brand/supra-learn-logo";
 import { cn } from "@/lib/utils";
+import { getAskCurdriceWhatsAppUrl } from "@/lib/ask-curdrice";
 import { useState } from "react";
-import { useTotalWeeks } from "@/hooks/use-curriculum";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/roadmap", label: "Roadmap", icon: Map },
   { href: "/projects", label: "Projects", icon: FolderGit2 },
   { href: "/ai-skills", label: "AI Skills", icon: Brain },
+  { href: "/communication", label: "Communication", icon: Languages },
   { href: "/interview", label: "Interview", icon: MessageSquare },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/notes", label: "Notes", icon: StickyNote },
   { href: "/profile", label: "Profile", icon: User },
 ];
@@ -26,15 +26,14 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const totalWeeks = useTotalWeeks();
+  const whatsAppUrl = getAskCurdriceWhatsAppUrl(pathname);
 
   const NavContent = () => (
     <>
-      <div className="px-4 py-6">
-        <Link href="/" className="block rounded-xl transition-opacity hover:opacity-90">
+      <div className="px-3 py-5">
+        <Link href="/" className="inline-flex rounded-lg px-3 py-1 transition-opacity hover:opacity-90">
           <SupraLearnLogo size="sm" tagline="Master Technology" />
         </Link>
-        <p className="mt-3 px-0.5 text-[10px] text-zinc-600">{totalWeeks}-week curriculum</p>
       </div>
       <nav className="flex-1 space-y-1 px-3 overflow-y-auto">
         {navItems.map((item) => {
@@ -58,12 +57,26 @@ export function Sidebar() {
         })}
       </nav>
       <div className="border-t border-zinc-800 p-4">
-        <div className="rounded-lg bg-zinc-800/50 p-3">
-          <p className="text-xs text-zinc-500">Shortcuts</p>
-          <p className="text-xs font-mono text-zinc-400">
-            <kbd className="rounded bg-zinc-700 px-1.5 py-0.5">⌘</kbd> + <kbd className="rounded bg-zinc-700 px-1.5 py-0.5">1-8</kbd>
-          </p>
-        </div>
+        <a
+          href={whatsAppUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group relative block overflow-hidden rounded-xl border border-emerald-500/25 bg-gradient-to-br from-emerald-950/50 via-zinc-900/90 to-zinc-950 p-3.5 transition-all hover:border-emerald-400/40 hover:shadow-[0_0_28px_-6px_rgba(16,185,129,0.35)]"
+        >
+          <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-emerald-500/10 blur-2xl transition-opacity group-hover:opacity-100" />
+          <div className="relative flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 ring-1 ring-emerald-500/30">
+              <MessageSquare className="h-4 w-4 text-emerald-400" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-white">Ask Curdrice</p>
+              <p className="text-[11px] text-zinc-500 transition-colors group-hover:text-zinc-400">
+                Stuck on a topic? WhatsApp me
+              </p>
+            </div>
+            <ArrowUpRight className="h-4 w-4 shrink-0 text-emerald-500/70 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-emerald-400" />
+          </div>
+        </a>
       </div>
     </>
   );

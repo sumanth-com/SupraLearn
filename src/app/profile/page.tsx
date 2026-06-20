@@ -1,88 +1,115 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Flame, Clock, Target, TrendingUp, Award, FileText, Calendar } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, Flame, TrendingUp } from "lucide-react";
 import { useProgressStore } from "@/store/use-progress-store";
-import { useGlobalStats, useCurrentWeekId, useTotalWeeks } from "@/hooks/use-curriculum";
+import { useStoreHydrated } from "@/hooks/use-store-hydrated";
 import { PageHeader } from "@/components/shared/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ProgressSettings } from "@/components/shared/progress-settings";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { PROFILE_IMAGE } from "@/lib/profile-image";
+
+function ProfileLoader() {
+  return (
+    <div className="mt-3 flex items-center gap-3">
+      <span className="relative flex h-7 w-7 shrink-0 items-center justify-center">
+        <span className="absolute inset-0 animate-ping rounded-full bg-indigo-400/25" />
+        <span className="relative inline-flex h-7 w-7 animate-spin rounded-full border-[3px] border-indigo-500/20 border-t-indigo-400 shadow-[0_0_14px_rgba(129,140,248,0.55)]" />
+      </span>
+      <span className="text-sm font-medium tracking-wide text-indigo-200">
+        upcoming java developer
+      </span>
+    </div>
+  );
+}
+
+function LearningSnapshot() {
+  const hydrated = useStoreHydrated();
+  const profile = useProgressStore((s) => s.profile);
+  const resumePosition = useProgressStore((s) => s.resumePosition);
+  const getStats = useProgressStore((s) => s.getStats);
+  const practiceWeek = useProgressStore((s) => s.getModuleCurrentWeek("practice"));
+
+  const stats = getStats();
+  const overallPct = hydrated ? stats.overallProgress : 0;
+  const streak = hydrated ? profile.streak : 0;
+  const week = hydrated ? practiceWeek : 1;
+  const resumeHref = resumePosition?.href ?? `/roadmap/week/${week}`;
+
+  return (
+    <div className="flex h-[11rem] flex-col justify-between rounded-2xl border border-zinc-800/80 bg-zinc-900/50 p-5 sm:h-[12rem]">
+      <div>
+        <h3 className="text-sm font-semibold text-zinc-100">Learning Snapshot</h3>
+        <p className="mt-0.5 text-xs text-zinc-500">Your progress at a glance</p>
+      </div>
+
+      <div className="space-y-3">
+        <div>
+          <div className="mb-1.5 flex items-center justify-between text-[11px] text-zinc-500">
+            <span className="inline-flex items-center gap-1">
+              <TrendingUp className="h-3.5 w-3.5 text-indigo-400" />
+              Overall progress
+            </span>
+            <span className="font-semibold tabular-nums text-indigo-300">{overallPct}%</span>
+          </div>
+          <Progress value={overallPct} className="h-1.5 bg-zinc-800" />
+        </div>
+
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-zinc-500">Practice week</span>
+          <span className="font-medium text-zinc-200">Week {week}</span>
+        </div>
+
+        <div className="flex items-center justify-between text-xs">
+          <span className="inline-flex items-center gap-1 text-zinc-500">
+            <Flame className="h-3.5 w-3.5 text-orange-400" />
+            Study streak
+          </span>
+          <span className="font-medium text-zinc-200">{streak} days</span>
+        </div>
+      </div>
+
+      <Link href={resumeHref} className="block">
+        <Button variant="gradient" size="sm" className="h-9 w-full gap-2">
+          Continue Learning
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Button>
+      </Link>
+    </div>
+  );
+}
 
 export default function ProfilePage() {
   const profile = useProgressStore((s) => s.profile);
-  const stats = useGlobalStats();
-  const currentWeekId = useCurrentWeekId();
-  const totalWeeks = useTotalWeeks();
-  const addStudySession = useProgressStore((s) => s.addStudySession);
-
-  const learningStats = [
-    { label: "Overall Progress", value: `${stats.overallProgress}%`, icon: TrendingUp },
-    { label: "Study Hours", value: profile.totalStudyHours.toFixed(1), icon: Clock },
-    { label: "Current Streak", value: `${profile.streak} days`, icon: Flame },
-    { label: "Current Week", value: `${currentWeekId}/${totalWeeks}`, icon: Calendar },
-    { label: "Projects", value: `${stats.projectsCompleted}/${stats.projectsTotal}`, icon: Award },
-    { label: "Interview", value: `${stats.interviewCompleted}/${stats.interviewTotal}`, icon: FileText },
-  ];
 
   return (
-    <div className="space-y-8">
-      <PageHeader title="Profile" description="Learning stats derived from curriculum progress" />
+    <div className="space-y-6">
+      <PageHeader title="Profile" description="Your learning progress at a glance" />
 
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-indigo-950/40 via-zinc-900/80 to-purple-950/30 p-8">
-        <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-          <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 text-3xl font-bold text-white">
-            {profile.avatar}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="relative h-[11rem] overflow-hidden rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-indigo-950/40 via-zinc-900/80 to-purple-950/30 sm:h-[12rem]">
+          <div className="relative z-10 flex h-full flex-col justify-center px-5 sm:px-6">
+            <h2 className="text-xl font-bold tracking-tight text-zinc-50 sm:text-2xl">
+              {profile.name}
+            </h2>
+            <ProfileLoader />
           </div>
-          <div className="flex-1 text-center sm:text-left">
-            <h2 className="text-2xl font-bold">{profile.name}</h2>
-            <p className="text-zinc-400 mt-1">Java Backend + AI Developer in Training</p>
-            <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-3">
-              <Badge variant="purple">Week {currentWeekId}</Badge>
-              <Badge variant="success">{profile.streak} day streak</Badge>
-              <Badge variant="default">{stats.overallProgress}% complete</Badge>
-            </div>
+
+          <div className="pointer-events-none absolute inset-y-1 right-1 w-[48%] max-w-[200px] sm:inset-y-0 sm:right-2 sm:w-[44%] sm:max-w-[220px]">
+            <Image
+              src={PROFILE_IMAGE}
+              alt={`${profile.name} profile photo`}
+              fill
+              className="object-contain object-right"
+              sizes="220px"
+              priority
+            />
           </div>
-          <Button variant="gradient" onClick={() => addStudySession(1)} className="gap-2">
-            <Clock className="h-4 w-4" /> Log 1 Hour
-          </Button>
         </div>
-      </motion.div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {learningStats.map((stat, i) => (
-          <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-            <Card>
-              <CardContent className="flex items-center gap-4 p-5">
-                <div className="rounded-lg bg-indigo-500/10 p-2.5"><stat.icon className="h-5 w-5 text-indigo-400" /></div>
-                <div>
-                  <p className="text-xs text-zinc-500">{stat.label}</p>
-                  <p className="text-lg font-bold">{stat.value}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader><CardTitle>Resume Readiness</CardTitle></CardHeader>
-          <CardContent>
-            <Progress value={profile.resumeReadinessScore} className="h-3" />
-            <p className="mt-2 text-sm text-indigo-300">{profile.resumeReadinessScore}% ready</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>GitHub Portfolio</CardTitle></CardHeader>
-          <CardContent>
-            <Progress value={profile.githubProgress} className="h-3" />
-            <p className="mt-2 text-sm text-indigo-300">{profile.githubProgress}% complete</p>
-          </CardContent>
-        </Card>
+        <LearningSnapshot />
       </div>
 
       <ProgressSettings />

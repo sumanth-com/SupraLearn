@@ -1,11 +1,18 @@
 "use client";
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import type { UserProfile, AppNote, StudySession, ProjectStatus } from "@/types";
-import type { UserProgressState } from "./progress-types";
+import type { UserProgressState, ResumePosition } from "./progress-types";
 import { defaultProgressState, PROGRESS_VERSION } from "./progress-types";
 import { getCurriculumWeeks, getTotalWeeks } from "@/curriculum/registry";
+import {
+  getResetEntityIds,
+  getResetGitHubWeekIds,
+  getResetProjectIds,
+  type ResetScope,
+  type ResetSectionId,
+} from "@/lib/reset-sections";
 import {
   downloadJson,
   getWeekEntityIds,
@@ -18,7 +25,20 @@ import {
   getCurrentWeekId,
   isWeekLocked,
   isWeekCompleted,
+  type ProgressCounts,
 } from "@/lib/progress-engine";
+import {
+  applyModuleCompletionUnlock,
+  getModuleCurrentWeek,
+  getModuleWeekProgress,
+  isModuleWeekCompleted,
+  isModuleWeekLocked,
+  migrateProgressStateV3,
+  rebuildModuleGatesFromProgress,
+  type LearningModule,
+} from "@/lib/module-progress";
+import { COMMUNICATION_WEEKS } from "@/curriculum/communication-skills";
+import { createIdbPersistStorage } from "@/lib/idb-persist-storage";
 
 const defaultProfile: UserProfile = {
   name: "Prathyu",
@@ -31,14 +51,18 @@ const defaultProfile: UserProfile = {
   githubProgress: 0,
 };
 
-const defaultNotes: AppNote[] = [
-  {
-    id: "note-1",
-    title: "Learning Notes",
-    content: "# My Notes\n\n- [ ] Start Week 1\n\nWrite your notes in **Markdown**...",
-    updatedAt: new Date().toISOString(),
-  },
-];
+const defaultNotes: AppNote[] = [];
+
+function syncModuleUnlocks(progress: UserProgressState): UserProgressState {
+  const weeks = getCurriculumWeeks();
+  return migrateProgressStateV3(
+    {
+      ...progress,
+      moduleGates: rebuildModuleGatesFromProgress(weeks, progress),
+    },
+    weeks
+  );
+}
 
 interface ProgressStore {
   progress: UserProgressState;
@@ -48,13 +72,18 @@ interface ProgressStore {
   todayGoal: string;
   todayGoalDate: string;
   todayGoalCompleted: boolean;
+  resumePosition: ResumePosition | null;
 
   getCompletionDate: (entityId: string) => string | undefined;
   getStats: () => ReturnType<typeof computeGlobalStats>;
   getWeekProgress: (weekId: number) => ReturnType<typeof computeWeekProgress>;
+  getModuleWeekProgress: (module: LearningModule, weekId: number) => ProgressCounts;
   getCurrentWeekId: () => number;
+  getModuleCurrentWeek: (module: LearningModule) => number;
   isLocked: (weekId: number) => boolean;
+  isModuleWeekLocked: (module: LearningModule, weekId: number) => boolean;
   isCompleted: (weekId: number) => boolean;
+  isModuleWeekCompleted: (module: LearningModule, weekId: number) => boolean;
   isDone: (entityId: string) => boolean;
   getNote: (entityId: string) => string;
   isBookmarked: (entityId: string) => boolean;
@@ -79,6 +108,8 @@ interface ProgressStore {
   // Week
   updateWeekNotes: (weekId: number, notes: string) => void;
   completeWeek: (weekId: number) => void;
+  completeModuleWeek: (module: LearningModule, weekId: number) => void;
+  setResumePosition: (position: ResumePosition) => void;
 
   // Profile & misc
   setTodayGoal: (goal: string) => void;
@@ -92,6 +123,7 @@ interface ProgressStore {
   syncProfileFromProgress: () => void;
   bootstrapSession: () => void;
   resetWeekProgress: (weekId: number) => void;
+  resetSectionProgress: (section: ResetSectionId, scope: ResetScope) => void;
   resetAllProgress: () => void;
   exportProgress: () => void;
   importProgress: (json: string) => void;
@@ -137,6 +169,7 @@ export const useProgressStore = create<ProgressStore>()(
       todayGoal: "Complete today's learning plan items",
       todayGoalDate: todayIso(),
       todayGoalCompleted: false,
+      resumePosition: null,
 
       getStats: () => computeGlobalStats(getCurriculumWeeks(), get().progress),
 
@@ -158,11 +191,28 @@ export const useProgressStore = create<ProgressStore>()(
         return computeWeekProgress(week, get().progress);
       },
 
+      getModuleWeekProgress: (module, weekId) => {
+        const week = getCurriculumWeeks().find((w) => w.id === weekId);
+        return getModuleWeekProgress(module, weekId, week, get().progress);
+      },
+
       getCurrentWeekId: () => getCurrentWeekId(getCurriculumWeeks(), get().progress),
 
-      isLocked: (weekId) => isWeekLocked(weekId, get().progress),
+      getModuleCurrentWeek: (module) => {
+        const max =
+          module === "communication" ? COMMUNICATION_WEEKS.length : getTotalWeeks();
+        return getModuleCurrentWeek(module, get().progress, max);
+      },
 
-      isCompleted: (weekId) => isWeekCompleted(weekId, get().progress),
+      isLocked: (weekId) => isModuleWeekLocked("roadmap", weekId, get().progress),
+
+      isModuleWeekLocked: (module, weekId) =>
+        isModuleWeekLocked(module, weekId, get().progress),
+
+      isCompleted: (weekId) => isModuleWeekCompleted("roadmap", weekId, get().progress),
+
+      isModuleWeekCompleted: (module, weekId) =>
+        isModuleWeekCompleted(module, weekId, get().progress),
 
       isDone: (entityId) => Boolean(get().progress.completed[entityId]),
 
@@ -183,7 +233,7 @@ export const useProgressStore = create<ProgressStore>()(
           } else {
             delete completionDates[entityId];
           }
-          const progress = { ...state.progress, completed, completionDates };
+          const progress = syncModuleUnlocks({ ...state.progress, completed, completionDates });
           const stats = computeGlobalStats(getCurriculumWeeks(), progress);
           const currentWeek = getCurrentWeekId(getCurriculumWeeks(), progress);
           return {
@@ -269,25 +319,28 @@ export const useProgressStore = create<ProgressStore>()(
           },
         })),
 
-      completeWeek: (weekId) =>
+      completeWeek: (weekId) => get().completeModuleWeek("roadmap", weekId),
+
+      completeModuleWeek: (module, weekId) =>
         set((state) => {
-          const nextId = weekId + 1;
-          const completedWeekIds = state.progress.completedWeekIds.includes(weekId)
-            ? state.progress.completedWeekIds
-            : [...state.progress.completedWeekIds, weekId];
-          const unlockedWeekIds = state.progress.unlockedWeekIds.includes(nextId)
-            ? state.progress.unlockedWeekIds
-            : nextId <= getTotalWeeks()
-              ? [...state.progress.unlockedWeekIds, nextId]
-              : state.progress.unlockedWeekIds;
-          const progress = { ...state.progress, completedWeekIds, unlockedWeekIds };
+          const maxWeek =
+            module === "communication" ? COMMUNICATION_WEEKS.length : getTotalWeeks();
+          const moduleGates = applyModuleCompletionUnlock(
+            module,
+            weekId,
+            state.progress.moduleGates,
+            maxWeek
+          );
+          const progress = { ...state.progress, moduleGates, version: PROGRESS_VERSION };
           const stats = computeGlobalStats(getCurriculumWeeks(), progress);
-          const currentWeek = getCurrentWeekId(getCurriculumWeeks(), progress);
+          const currentWeek = getModuleCurrentWeek("roadmap", progress, getTotalWeeks());
           return {
             progress,
             profile: syncDerivedProfile(state.profile, stats, currentWeek),
           };
         }),
+
+      setResumePosition: (position) => set({ resumePosition: position }),
 
       setTodayGoal: (goal) => set({ todayGoal: goal }),
       toggleTodayGoal: () => set((s) => ({ todayGoalCompleted: !s.todayGoalCompleted })),
@@ -300,8 +353,10 @@ export const useProgressStore = create<ProgressStore>()(
             updates.todayGoalDate = today;
             updates.todayGoalCompleted = false;
           }
-          const stats = computeGlobalStats(getCurriculumWeeks(), state.progress);
-          const currentWeek = getCurrentWeekId(getCurriculumWeeks(), state.progress);
+          const progress = migrateProgressStateV3(state.progress, getCurriculumWeeks());
+          updates.progress = progress;
+          const stats = computeGlobalStats(getCurriculumWeeks(), progress);
+          const currentWeek = getCurrentWeekId(getCurriculumWeeks(), progress);
           updates.profile = syncDerivedProfile(state.profile, stats, currentWeek);
           return { ...state, ...updates };
         });
@@ -315,7 +370,7 @@ export const useProgressStore = create<ProgressStore>()(
         const projectIds = getWeekProjectIds(week);
 
         set((state) => {
-          const progress = {
+          const base = {
             ...state.progress,
             completed: stripEntityKeys(state.progress.completed, ids),
             notes: stripEntityKeys(state.progress.notes, ids),
@@ -330,11 +385,62 @@ export const useProgressStore = create<ProgressStore>()(
             weekNotes: Object.fromEntries(
               Object.entries(state.progress.weekNotes).filter(([id]) => Number(id) !== weekId)
             ),
-            completedWeekIds: state.progress.completedWeekIds.filter((id) => id !== weekId),
-            unlockedWeekIds: state.progress.unlockedWeekIds.includes(weekId)
-              ? state.progress.unlockedWeekIds
-              : [...state.progress.unlockedWeekIds, weekId].sort((a, b) => a - b),
           };
+          const progress = syncModuleUnlocks(base);
+          const stats = computeGlobalStats(getCurriculumWeeks(), progress);
+          const currentWeek = getCurrentWeekId(getCurriculumWeeks(), progress);
+          return { progress, profile: syncDerivedProfile(state.profile, stats, currentWeek) };
+        });
+      },
+
+      resetSectionProgress: (section, scope) => {
+        if (section === "notes") {
+          set({ notes: defaultNotes });
+          return;
+        }
+
+        if (section === "study-stats") {
+          set((state) => ({
+            studySessions: [],
+            profile: {
+              ...state.profile,
+              streak: 0,
+              totalStudyHours: 0,
+              lastActiveDate: todayIso(),
+            },
+          }));
+          return;
+        }
+
+        const ids = getResetEntityIds(section, scope);
+        const projectIds = getResetProjectIds(section, scope);
+        const githubWeekIds = getResetGitHubWeekIds(section, scope);
+
+        set((state) => {
+          const base = {
+            ...state.progress,
+            completed: stripEntityKeys(state.progress.completed, ids),
+            notes: stripEntityKeys(state.progress.notes, ids),
+            bookmarks: stripEntityKeys(state.progress.bookmarks, ids),
+            completionDates: stripEntityKeys(state.progress.completionDates, ids),
+            projectMeta:
+              projectIds.length > 0
+                ? Object.fromEntries(
+                    Object.entries(state.progress.projectMeta).filter(
+                      ([id]) => !projectIds.includes(id)
+                    )
+                  )
+                : state.progress.projectMeta,
+            githubRepoLinks:
+              githubWeekIds.length > 0
+                ? Object.fromEntries(
+                    Object.entries(state.progress.githubRepoLinks).filter(
+                      ([id]) => !githubWeekIds.includes(Number(id))
+                    )
+                  )
+                : state.progress.githubRepoLinks,
+          };
+          const progress = syncModuleUnlocks(base);
           const stats = computeGlobalStats(getCurriculumWeeks(), progress);
           const currentWeek = getCurrentWeekId(getCurriculumWeeks(), progress);
           return { progress, profile: syncDerivedProfile(state.profile, stats, currentWeek) };
@@ -350,6 +456,7 @@ export const useProgressStore = create<ProgressStore>()(
           todayGoal: "Complete today's learning plan items",
           todayGoalDate: todayIso(),
           todayGoalCompleted: false,
+          resumePosition: null,
         });
       },
 
@@ -366,6 +473,7 @@ export const useProgressStore = create<ProgressStore>()(
           todayGoal: state.todayGoal,
           todayGoalDate: state.todayGoalDate,
           todayGoalCompleted: state.todayGoalCompleted,
+          resumePosition: state.resumePosition,
         };
         downloadJson(
           `prathyu-progress-${todayIso()}.json`,
@@ -376,13 +484,17 @@ export const useProgressStore = create<ProgressStore>()(
       importProgress: (json) => {
         const data = parseImportedProgress(json);
         set({
-          progress: { ...defaultProgressState, ...(data.progress as UserProgressState) },
+          progress: migrateProgressStateV3(
+            { ...defaultProgressState, ...(data.progress as UserProgressState) },
+            getCurriculumWeeks()
+          ),
           profile: { ...defaultProfile, ...(data.profile as UserProfile) },
           studySessions: (data.studySessions as StudySession[]) ?? [],
           notes: (data.notes as AppNote[]) ?? defaultNotes,
           todayGoal: data.todayGoal ?? "Complete today's learning plan items",
           todayGoalDate: data.todayGoalDate ?? todayIso(),
           todayGoalCompleted: Boolean(data.todayGoalCompleted),
+          resumePosition: (data.resumePosition as ResumePosition | null) ?? null,
         });
         get().syncProfileFromProgress();
       },
@@ -432,14 +544,21 @@ export const useProgressStore = create<ProgressStore>()(
         }),
     }),
     {
-      name: "prathyu-academy-v2",
+      name: "prathyu-academy-v3",
       version: PROGRESS_VERSION,
+      storage: createJSONStorage(() => createIdbPersistStorage()),
       migrate: (persisted, version) => {
         if (!persisted || typeof persisted !== "object") return persisted;
         const state = persisted as Record<string, unknown>;
         if (!state.todayGoalDate) state.todayGoalDate = todayIso();
-        if (version < PROGRESS_VERSION && state.progress) {
-          (state.progress as UserProgressState).version = PROGRESS_VERSION;
+        if (state.progress) {
+          state.progress = migrateProgressStateV3(
+            state.progress as UserProgressState,
+            getCurriculumWeeks()
+          );
+        }
+        if (version < PROGRESS_VERSION && !state.resumePosition) {
+          state.resumePosition = null;
         }
         return persisted;
       },

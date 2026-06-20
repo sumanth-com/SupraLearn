@@ -1,4 +1,6 @@
 import type { ProjectStatus } from "@/types";
+import type { ModuleWeekGates, ResumePosition } from "@/lib/module-progress";
+import { createDefaultModuleGates } from "@/lib/module-progress";
 
 export interface ProjectProgressMeta {
   progress: number;
@@ -17,11 +19,15 @@ export interface UserProgressState {
   projectMeta: Record<string, ProjectProgressMeta>;
   githubRepoLinks: Record<string, string>;
   weekNotes: Record<number, string>;
+  /** Per-module week unlock/completion (v3+) */
+  moduleGates: ModuleWeekGates;
+  /** @deprecated legacy global gates — kept for migration only */
   unlockedWeekIds: number[];
+  /** @deprecated legacy global gates — kept for migration only */
   completedWeekIds: number[];
 }
 
-export const PROGRESS_VERSION = 2;
+export const PROGRESS_VERSION = 3;
 
 export const defaultProgressState: UserProgressState = {
   version: PROGRESS_VERSION,
@@ -32,6 +38,10 @@ export const defaultProgressState: UserProgressState = {
   projectMeta: {},
   githubRepoLinks: {},
   weekNotes: {},
+  moduleGates: createDefaultModuleGates(),
   unlockedWeekIds: [1],
   completedWeekIds: [],
 };
+
+export type { ResumePosition };
+

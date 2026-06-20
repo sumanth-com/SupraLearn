@@ -15,9 +15,11 @@ import {
   getProjectMeta,
 } from "@/curriculum/project-catalog";
 import { ProjectSplitView } from "@/components/projects/project-split-view";
+import { LockedWeekMessage } from "@/components/shared/locked-week-message";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { useTrackResumePosition } from "@/hooks/use-resume-position";
 
 const DIFFICULTY_LABEL = { easy: "Easy", medium: "Medium", hard: "Hard" } as const;
 
@@ -30,7 +32,7 @@ export default function ProjectDetailPage({
   const weekId = parseInt(weekIdStr, 10);
   const curriculumWeek = useCurriculumWeek(isPortfolioWeek(weekId) ? 1 : weekId);
   const progress = useProgressStore((s) => s.progress);
-  const isLocked = useProgressStore((s) => s.isLocked(weekId));
+  const isLocked = useProgressStore((s) => s.isModuleWeekLocked("projects", weekId));
   const isDone = useProgressStore((s) => s.isDone);
   const setProjectComplete = useProgressStore((s) => s.setProjectComplete);
 
@@ -43,6 +45,19 @@ export default function ProjectDetailPage({
     if (!project) return null;
     return getProjectDetail(project);
   }, [project]);
+
+  const portfolio = isPortfolioWeek(weekId);
+  const locked = !portfolio && isLocked;
+  const projectTitle = project?.title ?? listing?.title ?? "Project";
+
+  useTrackResumePosition(
+    "projects",
+    weekId,
+    projectTitle,
+    portfolio ? "Portfolio" : `Week ${weekId}`,
+    `/projects/${weekId}/${projectId}`,
+    Boolean(project) && !locked
+  );
 
   if (!project || !detail) {
     return (
@@ -57,17 +72,12 @@ export default function ProjectDetailPage({
     );
   }
 
-  const portfolio = isPortfolioWeek(weekId);
-  const locked = !portfolio && isLocked;
-
   if (locked) {
     return (
-      <div className="py-20 text-center">
-        <h2 className="text-xl font-semibold text-zinc-400">This week is locked</h2>
-        <Link href="/projects">
-          <Button className="mt-4" variant="secondary">
-            Back to Projects
-          </Button>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
+        <LockedWeekMessage module="projects" weekId={weekId} />
+        <Link href="/projects" className="mt-6">
+          <Button variant="secondary">Back to Projects</Button>
         </Link>
       </div>
     );

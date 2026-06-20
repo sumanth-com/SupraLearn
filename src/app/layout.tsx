@@ -8,42 +8,26 @@ import { Providers } from "@/components/providers";
 
 import { AppShell } from "@/components/layout/app-shell";
 
-
-
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-
-
 
 export const metadata: Metadata = {
   title: "SupraLearn | Master Technology",
   description: "SupraLearn — Master Technology with a personalized Java Backend + AI career roadmap",
+  manifest: "/manifest.json",
   icons: {
     icon: "/supra-learn-icon.svg",
     apple: "/supra-learn-icon.svg",
   },
 };
 
-
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-
   return (
-
     <html lang="en" className="dark">
-
       <body className={`${inter.variable} font-sans antialiased`}>
-
         <Providers>
-
           <AppShell>{children}</AppShell>
-
         </Providers>
-
       </body>
-
     </html>
-
   );
-
 }
-

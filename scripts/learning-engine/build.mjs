@@ -22,8 +22,9 @@ const bundle = {
 };
 
 for (const week of curriculum) {
-  const topicBundles = week.topics.map((topic) => {
-    const lessons = getLessonsForTopic(week.weekId, topic);
+  const topicBundles = week.topics.map((topic, topicIndex) => {
+    const enrichedTopic = { ...topic, topicIndex, topicCount: week.topics.length };
+    const lessons = getLessonsForTopic(week.weekId, enrichedTopic);
     bundle.stats.topics++;
     bundle.stats.lessons += lessons.length;
     for (const l of lessons) {
