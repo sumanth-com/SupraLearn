@@ -1,0 +1,49 @@
+{
+  "ai-e1": {
+    "answer": "JDK (Java Development Kit) is what developers install to write Java programs. It includes the compiler (javac), debugger, libraries, and a JRE. JRE (Java Runtime Environment) is what you need to run Java programs — it contains the JVM plus core class libraries, but no compiler. JVM (Java Virtual Machine) is the engine that executes bytecode — it loads classes, manages memory, runs garbage collection, and translates bytecode to machine instructions on your OS.",
+    "realWorld": "On your laptop you install the JDK to write and compile Week 1 programs. When you deploy a JAR to a server, the server only needs a JRE (or JDK) with a compatible JVM — the same HelloWorld.class bytecode runs on Windows and Linux without recompiling.",
+    "code": "// You write this with the JDK (javac compiles it)\npublic class Hello {\n    public static void main(String[] args) {\n        System.out.println(\"Runs on the JVM!\");\n    }\n}"
+  },
+  "ai-e2": {
+    "answer": "A variable is like a labeled box where you store a value. The label is the variable name (e.g., age), and the box holds one value at a time (e.g., 12). In Java you must say what type of value the box holds — int for whole numbers, double for decimals, String for text. You can change what's inside the box later: age = 13;",
+    "realWorld": "Imagine a video game character: health = 100, coins = 50, playerName = \"Maya\". When Maya collects a coin, the program updates coins = 51. Variables let your Student Information System remember names, roll numbers, and grades while the program runs.",
+    "code": "int age = 10;\nString name = \"Riya\";\ndouble height = 1.42;\nSystem.out.println(name + \" is \" + age + \" years old\");"
+  },
+  "ai-e3": {
+    "answer": "Line 1: `public class HelloWorld` — declares a class named HelloWorld (filename must match). Line 2: `public static void main(String[] args)` — the entry point; JVM starts here. Line 3: `System.out.println(...)` — prints text to the console followed by a newline. Line 4–5: closing braces end the method and class. Every standalone Java app needs this main method structure.",
+    "realWorld": "Your first GitHub upload for Week 1 is HelloWorld.java. When you run `java HelloWorld`, the JVM finds main(), executes println, and you see output in the terminal — the same flow every Java application uses to start.",
+    "code": "public class HelloWorld {\n    public static void main(String[] args) {\n        System.out.println(\"Hello, World!\");\n    }\n}"
+  },
+  "ai-e4": {
+    "answer": "A syntax error means the Java compiler (javac) cannot understand your code structure — missing semicolon, mismatched braces, wrong keyword spelling, or invalid type usage. The compiler stops before creating bytecode and reports the file name and line number. Syntax errors are caught before the program ever runs.",
+    "realWorld": "You write `int x = 5` without a semicolon. The IDE shows a red squiggle; javac says '; expected'. Fix the semicolon, recompile, and the error disappears. Syntax errors protect you from running broken structure.",
+    "code": "// Syntax error: missing semicolon\nint score = 95\nSystem.out.println(score);\n\n// Fixed:\nint score = 95;\nSystem.out.println(score);"
+  },
+  "ai-e5": {
+    "answer": "Common beginner bugs: missing semicolons, wrong variable types, using = instead of == in conditions, array index out of bounds, and typos in method names. To debug: read the compiler error line number, check recent edits, print variable values, and fix one issue at a time. Logic bugs compile but produce wrong output — trace the code step by step.",
+    "realWorld": "Broken program: `String name = null; System.out.println(name.length());` — compiles but throws NullPointerException at runtime. The fix: check `if (name != null)` before calling methods. Always read the error message from the bottom of the stack trace upward.",
+    "code": "// Bug: prints nothing useful — forgot to add numbers\npublic class Add {\n    public static void main(String[] args) {\n        int a = 5, b = 3;\n        System.out.println(\"Sum\"); // should print a + b\n    }\n}\n\n// Fix:\nSystem.out.println(\"Sum: \" + (a + b));"
+  },
+  "ai-e6": {
+    "answer": "When comparing explanations, check: (1) accuracy against JDK docs, (2) clarity for your level, (3) whether examples compile, (4) depth vs. unnecessary complexity. One answer might use perfect analogies but wrong syntax; another might be technically correct but hard to follow. The best explanation is correct, simple, and runnable.",
+    "realWorld": "Question: \"Difference between int and double?\" Response A says doubles are 'always better' — misleading. Response B explains int for counts, double for measurements with a price example — clearer and correct. You learned to evaluate quality, not just accept the first answer."
+  },
+  "ai-e7": {
+    "answer": "Good variable names describe purpose: studentCount not n, totalPrice not tp, isLoggedIn not flag. Use camelCase in Java. Avoid single letters except loop counters (i, j). Boolean names often start with is/has/can. Names should make code readable without comments.",
+    "realWorld": "Before: `int x = 20; String s = \"A\";` After: `int passingScore = 20; String grade = \"A\";` A teammate reading your Student Information System instantly understands the second version during code review.",
+    "code": "// Weak\nint a = 100;\ndouble b = 89.5;\n\n// Strong\nint maxAttendance = 100;\ndouble examAverage = 89.5;"
+  },
+  "ai-e8": {
+    "answer": "Type casting converts a value from one type to another. Widening (implicit): int → double happens automatically. Narrowing (explicit): double → int requires (int) and truncates decimals. Casting is needed when you mix types or extract integer parts from decimals.",
+    "realWorld": "Shopping cart: items = 3 (int), priceEach = 9.99 (double). Total = items * priceEach gives 29.97. To split bill among friends: (int)(29.97 / 2) = 14 — cast drops .97. Know when data loss is acceptable.",
+    "code": "double price = 9.99;\nint rounded = (int) price; // 9\n\ndouble avg = 7 / 2;      // 3.0 (int division first!)\ndouble avg2 = 7 / 2.0;   // 3.5"
+  },
+  "ai-e9": {
+    "answer": "Java basics quiz — test yourself: (1) What is the entry point method signature? (2) Name 4 primitive types. (3) int vs double — when use each? (4) What does javac do vs java? (5) Fix: `String name = Alex` (missing quotes). (6) What is a variable? (7) Why use semicolons? (8) What is bytecode? (9) == vs = ? (10) What package contains System.out?",
+    "realWorld": "Before your Week 1 assessment, cover the answer panel, try each quiz question on paper, then reveal and check. Active recall beats rereading — this is how interview prep works too."
+  },
+  "ai-e10": {
+    "answer": "Student Information System review checklist: separate input, logic, and display (main method shouldn't do everything); use meaningful class/variable names; validate user input (empty name, negative age); handle invalid menu choices with loops; avoid magic numbers (use constants); add comments only where logic isn't obvious; test edge cases — empty list, duplicate roll number.",
+    "realWorld": "A hiring manager skims your GitHub README and Variables.java. Clean structure and validation show you think like a developer, not just someone who copied code. Refactor one 80-line main() into smaller methods — that's a visible improvement for your portfolio."
+  }
+}
