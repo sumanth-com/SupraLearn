@@ -32,7 +32,7 @@ export function Sidebar() {
     <>
       <div className="px-3 py-5">
         <Link href="/" className="inline-flex rounded-lg px-3 py-1 transition-opacity hover:opacity-90">
-          <SupraLearnLogo size="sm" tagline="Master Technology" />
+          <SupraLearnLogo size="sm" tagline="Learn. Build. Ship." />
         </Link>
       </div>
       <nav className="flex-1 space-y-1 px-3 overflow-y-auto">

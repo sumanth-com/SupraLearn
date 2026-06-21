@@ -39,13 +39,15 @@ export default function AISkillsPage() {
 
   const allModules = useMemo(
     () => [
-      ...weeks.map((w) => ({
-        weekId: w.id,
-        title: w.title,
-        skill: w.aiSkill,
-        locked: isModuleWeekLocked("ai-skills", w.id),
-        progress: getWeekProgress(w.id).ai.percentage,
-      })),
+      ...weeks
+        .filter((w) => w.id !== PROFESSIONAL_AI_WEEK_ID)
+        .map((w) => ({
+          weekId: w.id,
+          title: w.title,
+          skill: w.aiSkill,
+          locked: isModuleWeekLocked("ai-skills", w.id),
+          progress: getWeekProgress(w.id).ai.percentage,
+        })),
       {
         weekId: PROFESSIONAL_AI_WEEK_ID,
         title: getProfessionalAiWeekTitle(),

@@ -1,6 +1,6 @@
 {
-  "name": "SupraLearn",
-  "short_name": "SupraLearn",
+  "name": "SupraCodez",
+  "short_name": "SupraCodez",
   "description": "Personal Java Backend + AI learning platform",
   "start_url": "/",
   "display": "standalone",

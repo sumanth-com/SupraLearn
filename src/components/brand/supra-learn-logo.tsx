@@ -91,7 +91,7 @@ export function SupraLearnLogo({
   size = "sm",
   showText = true,
   showTagline = true,
-  tagline = "Master Technology",
+  tagline = "Learn. Build. Ship.",
   className,
   markOnly = false,
 }: SupraLearnLogoProps) {
@@ -110,7 +110,7 @@ export function SupraLearnLogo({
               TITLE_SIZES[size]
             )}
           >
-            SupraLearn
+            SupraCodez
           </span>
           {showTagline && (
             <span className="text-[10px] font-medium uppercase leading-none tracking-[0.14em] text-zinc-500">

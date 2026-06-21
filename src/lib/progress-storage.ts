@@ -26,7 +26,7 @@ export interface ExportedProgress {
 export function parseImportedProgress(raw: string): ExportedProgress {
   const data = JSON.parse(raw) as ExportedProgress;
   if (data.app !== "prathyu-academy" || !data.progress) {
-    throw new Error("Invalid backup file. Please select a SupraLearn export.");
+    throw new Error("Invalid backup file. Please select a SupraCodez export.");
   }
   return data;
 }

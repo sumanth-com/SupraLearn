@@ -11,8 +11,8 @@ import { AppShell } from "@/components/layout/app-shell";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "SupraLearn | Master Technology",
-  description: "SupraLearn — Master Technology with a personalized Java Backend + AI career roadmap",
+  title: "SupraCodez | Learn. Build. Ship.",
+  description: "SupraCodez — Your personalized Java Backend + AI career roadmap",
   manifest: "/manifest.json",
 };
 
