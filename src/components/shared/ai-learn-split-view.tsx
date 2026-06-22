@@ -1,11 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, Check, ChevronLeft, ChevronRight, Circle } from "lucide-react";
+import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import type { CurriculumChecklistItem } from "@/curriculum/types";
 import type { AiLearnDetail } from "@/curriculum/ai-content/types";
 import { AiLearnAnswer } from "@/components/shared/ai-learn-answer";
-import { Textarea } from "@/components/ui/textarea";
+import { EntityNoteTextarea } from "@/components/shared/entity-note-textarea";
+import {
+  learnNavBtn,
+  MarkCompleteButton,
+  SidebarItemIndicator,
+} from "@/components/shared/learn-mark-controls";
+import { useProgressStore } from "@/store/use-progress-store";
 import { cn } from "@/lib/utils";
 
 export interface AiLearnSection {
@@ -26,15 +32,12 @@ interface AiLearnSplitViewProps {
   isDone: (id: string) => boolean;
   onToggle: (id: string) => void;
   getDetail: (id: string, title: string, kind: "topic" | "practice") => AiLearnDetail;
+  /** @deprecated Notes persist automatically via EntityNoteTextarea */
   getNote?: (id: string) => string;
+  /** @deprecated Notes persist automatically via EntityNoteTextarea */
   setNote?: (id: string, note: string) => void;
+  sidebarTitle?: string;
 }
-
-const navBtn =
-  "inline-flex h-8 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 text-xs font-medium transition-colors ring-1 sm:text-sm";
-
-const markBtn =
-  "min-w-[7.75rem] px-3.5 sm:min-w-[8.5rem] sm:px-4";
 
 export function AiLearnSplitView({
   sections,
@@ -42,9 +45,11 @@ export function AiLearnSplitView({
   isDone,
   onToggle,
   getDetail,
-  getNote,
-  setNote,
+  sidebarTitle = "Topics",
 }: AiLearnSplitViewProps) {
+  const completed = useProgressStore((s) => s.progress.completed);
+  const checkDone = (id: string) => Boolean(completed[id]) || isDone(id);
+
   const flatItems = useMemo(() => {
     const result: FlatItem[] = [];
     let index = 0;
@@ -63,6 +68,7 @@ export function AiLearnSplitView({
   }, [sections]);
 
   const [selectedId, setSelectedId] = useState(flatItems[0]?.id ?? "");
+  const [pulseId, setPulseId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!flatItems.some((t) => t.id === selectedId)) {
@@ -73,9 +79,10 @@ export function AiLearnSplitView({
   const selectedIndex = flatItems.findIndex((t) => t.id === selectedId);
   const selected = flatItems[selectedIndex] ?? flatItems[0];
   const detail = selected ? getDetail(selected.id, selected.title, selected.kind) : null;
-  const completedCount = flatItems.filter((t) => isDone(t.id)).length;
+  const completedCount = flatItems.filter((t) => checkDone(t.id)).length;
   const isFirst = selectedIndex <= 0;
   const isLast = selectedIndex >= flatItems.length - 1;
+  const selectedDone = selected ? checkDone(selected.id) : false;
 
   const goPrevious = () => {
     if (!isFirst) setSelectedId(flatItems[selectedIndex - 1].id);
@@ -86,8 +93,11 @@ export function AiLearnSplitView({
   };
 
   const handleMarkComplete = () => {
+    if (!selected) return;
+    const wasDone = checkDone(selected.id);
     onToggle(selected.id);
-    if (!isLast && !isDone(selected.id)) {
+    if (!wasDone) setPulseId(selected.id);
+    if (!isLast && !wasDone) {
       setSelectedId(flatItems[selectedIndex + 1].id);
     }
   };
@@ -112,7 +122,6 @@ export function AiLearnSplitView({
       </div>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[1fr_280px] xl:grid-cols-[1fr_300px]">
-        {/* Left: grid rows fill every pixel — no wasted space */}
         <div className="grid min-h-0 grid-rows-[auto_minmax(0,1.15fr)_minmax(0,1fr)_auto] gap-2 overflow-x-hidden border-b border-zinc-800 p-3 sm:p-4 lg:border-b-0 lg:border-r">
           <h2 className="truncate text-xl font-extrabold leading-tight tracking-tight text-white sm:text-2xl">
             {selected.title}
@@ -122,20 +131,7 @@ export function AiLearnSplitView({
             <AiLearnAnswer title={selected.title} detail={detail} className="h-full" hideTitle />
           </div>
 
-          {setNote && getNote && (
-            <div className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-zinc-800/80 bg-zinc-900/40">
-              <p className="shrink-0 border-b border-zinc-800/60 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                Notes
-              </p>
-              <Textarea
-                value={getNote(selected.id)}
-                onChange={(e) => setNote(selected.id, e.target.value)}
-                placeholder="Write your learnings here — saved automatically..."
-                className="!min-h-0 min-h-0 flex-1 resize-none rounded-none border-0 bg-transparent px-3 py-2 text-sm focus-visible:ring-0"
-                disabled={locked}
-              />
-            </div>
-          )}
+          <EntityNoteTextarea entityId={selected.id} disabled={locked} />
 
           <div className="flex shrink-0 justify-center gap-2 pt-0.5">
             <button
@@ -143,7 +139,7 @@ export function AiLearnSplitView({
               disabled={isFirst}
               onClick={goPrevious}
               className={cn(
-                navBtn,
+                learnNavBtn,
                 isFirst
                   ? "cursor-not-allowed bg-zinc-900/50 text-zinc-600 ring-zinc-800"
                   : "bg-zinc-800/80 text-zinc-200 ring-zinc-700 hover:bg-zinc-800"
@@ -153,38 +149,21 @@ export function AiLearnSplitView({
               <span className="hidden sm:inline">Prev</span>
             </button>
 
-            <button
-              type="button"
+            <MarkCompleteButton
+              done={selectedDone}
               disabled={locked}
+              labelPending={completeLabelLong}
+              labelDone={completeLabel}
               onClick={handleMarkComplete}
-              className={cn(
-                navBtn,
-                markBtn,
-                isDone(selected.id)
-                  ? "bg-emerald-500/10 text-emerald-400 ring-emerald-500/30"
-                  : "bg-indigo-500/10 text-indigo-300 ring-indigo-500/30 hover:bg-indigo-500/15",
-                locked && "cursor-not-allowed opacity-50"
-              )}
-            >
-              {isDone(selected.id) ? (
-                <>
-                  <Check className="h-3.5 w-3.5 shrink-0" />
-                  Completed
-                </>
-              ) : (
-                <>
-                  <Circle className="h-3.5 w-3.5 shrink-0" />
-                  {completeLabelLong}
-                </>
-              )}
-            </button>
+              pulse={pulseId === selected.id}
+            />
 
             <button
               type="button"
               disabled={isLast}
               onClick={goNext}
               className={cn(
-                navBtn,
+                learnNavBtn,
                 isLast
                   ? "cursor-not-allowed bg-zinc-900/50 text-zinc-600 ring-zinc-800"
                   : "bg-zinc-800/80 text-zinc-200 ring-zinc-700 hover:bg-zinc-800"
@@ -196,11 +175,10 @@ export function AiLearnSplitView({
           </div>
         </div>
 
-        {/* Right: only scrollable area */}
         <div className="flex min-h-0 flex-col overflow-hidden">
           <div className="shrink-0 border-b border-zinc-800 px-3 py-2">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-              Questions
+              {sidebarTitle}
             </p>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
@@ -214,7 +192,7 @@ export function AiLearnSplitView({
                 {section.items.map((item) => {
                   const flat = flatItems.find((f) => f.id === item.id)!;
                   const active = item.id === selectedId;
-                  const done = isDone(item.id);
+                  const done = checkDone(item.id);
                   const displayNum = flat.globalIndex + 1;
 
                   return (
@@ -229,18 +207,7 @@ export function AiLearnSplitView({
                           : "hover:bg-zinc-800/40"
                       )}
                     >
-                      <span
-                        className={cn(
-                          "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded text-[10px] font-semibold tabular-nums",
-                          active
-                            ? "bg-indigo-500/20 text-indigo-300"
-                            : done
-                              ? "bg-emerald-500/15 text-emerald-400"
-                              : "bg-zinc-800 text-zinc-500"
-                        )}
-                      >
-                        {done ? <Check className="h-3 w-3" /> : displayNum}
-                      </span>
+                      <SidebarItemIndicator displayNum={displayNum} done={done} active={active} />
                       <span
                         className={cn(
                           "text-xs leading-snug sm:text-sm",

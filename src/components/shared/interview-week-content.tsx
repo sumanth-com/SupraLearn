@@ -9,8 +9,6 @@ interface InterviewWeekContentProps {
   locked?: boolean;
   isDone: (id: string) => boolean;
   onToggle: (id: string) => void;
-  getNote: (id: string) => string;
-  setNote: (id: string, note: string) => void;
   isBookmarked: (id: string) => boolean;
   onToggleBookmark: (id: string) => void;
 }
@@ -20,8 +18,6 @@ export function InterviewWeekContent({
   locked,
   isDone,
   onToggle,
-  getNote,
-  setNote,
   isBookmarked,
   onToggleBookmark,
 }: InterviewWeekContentProps) {
@@ -50,8 +46,6 @@ export function InterviewWeekContent({
         isDone={isDone}
         onToggle={onToggle}
         getQuestion={(id) => questionById.get(id)}
-        getNote={getNote}
-        setNote={setNote}
         isBookmarked={isBookmarked}
         onToggleBookmark={onToggleBookmark}
       />

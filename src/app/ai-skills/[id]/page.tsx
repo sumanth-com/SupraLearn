@@ -26,17 +26,16 @@ export default function AISkillWeekPage({ params }: { params: Promise<{ id: stri
   const isModuleLocked = useProgressStore((s) => s.isModuleWeekLocked("ai-skills", weekId));
   const isLocked = !isProfessional && isModuleLocked;
   const isDone = useProgressStore((s) => s.isDone);
+  const progress = useProgressStore((s) => s.progress);
   const toggleComplete = useProgressStore((s) => s.toggleComplete);
-  const getNote = useProgressStore((s) => s.getNote);
-  const setNote = useProgressStore((s) => s.setNote);
 
   const skill = isProfessional ? getProfessionalAiSkill() : curriculumWeek?.aiSkill;
 
   const professionalPct = useMemo(() => {
     if (!isProfessional || !skill) return 0;
-    const stats = getAiSkillStats(skill, isDone);
+    const stats = getAiSkillStats(skill, (id) => Boolean(progress.completed[id]));
     return stats.overallPct;
-  }, [isProfessional, skill, isDone]);
+  }, [isProfessional, skill, progress]);
 
   const displayTitle = skill?.title.replace(/^AI Skill of the Week — /, "") ?? "AI Skills";
 
@@ -74,7 +73,10 @@ export default function AISkillWeekPage({ params }: { params: Promise<{ id: stri
   }
 
   const aiPct = isProfessional ? professionalPct : (weekProgress?.ai.percentage ?? 0);
-  const stats = getAiSkillStats(skill, isDone);
+  const stats = useMemo(
+    () => getAiSkillStats(skill, (id) => Boolean(progress.completed[id])),
+    [skill, progress]
+  );
 
   return (
     <div className="fixed inset-0 z-10 flex flex-col overflow-hidden bg-zinc-950 lg:left-64">
@@ -115,8 +117,6 @@ export default function AISkillWeekPage({ params }: { params: Promise<{ id: stri
             locked={false}
             isDone={isDone}
             onToggle={toggleComplete}
-            getNote={getNote}
-            setNote={setNote}
           />
         </div>
       </div>

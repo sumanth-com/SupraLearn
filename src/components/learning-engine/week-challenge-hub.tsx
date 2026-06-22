@@ -342,7 +342,7 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
                         )}
                         variant={isFirst && !done ? "default" : "outline"}
                       >
-                        {done ? "Review" : "Solve Challenge"}
+                        {done ? "Solved" : "Solve Challenge"}
                       </Button>
                     </Link>
                   </div>

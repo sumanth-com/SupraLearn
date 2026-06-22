@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Lock } from "lucide-react";
 import { getLearningWeek } from "@/learning-engine/loader";
 import { LearningEngineView } from "@/components/learning-engine/learning-engine-view";
+import { ChallengeMarkCompleteButton } from "@/components/learning-engine/challenge-mark-complete";
 import { Button } from "@/components/ui/button";
 import { useProgressStore } from "@/store/use-progress-store";
 
@@ -54,6 +55,9 @@ function WeekLearnContent({ weekId }: { weekId: number }) {
           </Button>
         </Link>
         <h1 className="truncate text-sm font-medium text-zinc-300">{week.title}</h1>
+        <Suspense fallback={null}>
+          <ChallengeMarkCompleteButton weekId={weekId} />
+        </Suspense>
       </header>
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <Suspense fallback={<div className="flex flex-1 items-center justify-center text-zinc-500">Loading…</div>}>

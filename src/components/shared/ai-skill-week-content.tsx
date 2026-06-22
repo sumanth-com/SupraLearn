@@ -11,8 +11,6 @@ interface AISkillWeekContentProps {
   locked: boolean;
   isDone: (id: string) => boolean;
   onToggle: (id: string) => void;
-  getNote: (id: string) => string;
-  setNote: (id: string, note: string) => void;
 }
 
 export function getAiSkillStats(skill: CurriculumAISkill, isDone: (id: string) => boolean) {
@@ -43,7 +41,7 @@ export function getAiSkillStats(skill: CurriculumAISkill, isDone: (id: string) =
 
 export type AiSkillStats = ReturnType<typeof getAiSkillStats>;
 
-export function AISkillWeekContent({ skill, locked, isDone, onToggle, getNote, setNote }: AISkillWeekContentProps) {
+export function AISkillWeekContent({ skill, locked, isDone, onToggle }: AISkillWeekContentProps) {
   const sections = useMemo(
     () => [
       { label: "Learning Topics", kind: "topic" as const, items: skill.learningTopics },
@@ -62,8 +60,7 @@ export function AISkillWeekContent({ skill, locked, isDone, onToggle, getNote, s
         getDetail={(id, title, kind) =>
           kind === "topic" ? getAiTopicDetail(id, title) : getAiExerciseDetail(id, title)
         }
-        getNote={getNote}
-        setNote={setNote}
+        sidebarTitle="Topics"
       />
     </div>
   );

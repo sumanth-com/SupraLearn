@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, Circle } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getGitHubFileDetail } from "@/curriculum/github-content";
 import { GitHubFileAnswer } from "@/components/shared/github-file-answer";
-import { Textarea } from "@/components/ui/textarea";
+import { EntityNoteTextarea } from "@/components/shared/entity-note-textarea";
+import { MarkCompleteButton, SidebarItemIndicator } from "@/components/shared/learn-mark-controls";
+import { useProgressStore } from "@/store/use-progress-store";
 import { cn } from "@/lib/utils";
 
 export interface GitHubSplitItem {
@@ -19,8 +21,6 @@ interface GitHubSplitViewProps {
   locked?: boolean;
   isDone: (id: string) => boolean;
   onToggle: (id: string) => void;
-  getNote?: (id: string) => string;
-  setNote?: (id: string, note: string) => void;
 }
 
 const navBtn =
@@ -34,10 +34,11 @@ export function GitHubSplitView({
   locked = false,
   isDone,
   onToggle,
-  getNote,
-  setNote,
 }: GitHubSplitViewProps) {
+  const completed = useProgressStore((s) => s.progress.completed);
+  const checkDone = (id: string) => Boolean(completed[id]) || isDone(id);
   const [selectedId, setSelectedId] = useState(items[0]?.id ?? "");
+  const [pulseId, setPulseId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!items.some((t) => t.id === selectedId)) {
@@ -47,7 +48,7 @@ export function GitHubSplitView({
 
   const selectedIndex = items.findIndex((t) => t.id === selectedId);
   const selected = items[selectedIndex] ?? items[0];
-  const completedCount = items.filter((t) => isDone(t.id)).length;
+  const completedCount = items.filter((t) => checkDone(t.id)).length;
   const isFirst = selectedIndex <= 0;
   const isLast = selectedIndex >= items.length - 1;
 
@@ -66,11 +67,13 @@ export function GitHubSplitView({
 
   const handleMarkComplete = useCallback(() => {
     if (!selected) return;
+    const wasDone = checkDone(selected.id);
     onToggle(selected.id);
-    if (!isLast && !isDone(selected.id)) {
+    if (!wasDone) setPulseId(selected.id);
+    if (!isLast && !wasDone) {
       setSelectedId(items[selectedIndex + 1].id);
     }
-  }, [selected, onToggle, isLast, isDone, items, selectedIndex]);
+  }, [selected, onToggle, isLast, checkDone, items, selectedIndex]);
 
   if (!selected || !detail || items.length === 0) return null;
 
@@ -100,18 +103,15 @@ export function GitHubSplitView({
           <GitHubFileAnswer detail={detail} className="h-full pb-6" />
         </div>
 
-        {setNote && getNote && (
-          <div className="shrink-0 border-t border-zinc-800/60 px-5 py-3 sm:px-8">
-            <Textarea
-              value={getNote(selected.id)}
-              onChange={(e) => setNote(selected.id, e.target.value)}
-              placeholder="Notes — saved automatically"
-              rows={2}
-              className="min-h-0 resize-none border-zinc-800/80 bg-zinc-900/30 text-sm focus-visible:ring-indigo-500/30"
-              disabled={locked}
-            />
-          </div>
-        )}
+        <div className="shrink-0 border-t border-zinc-800/60 px-5 py-3 sm:px-8">
+          <EntityNoteTextarea
+            entityId={selected.id}
+            disabled={locked}
+            placeholder="Notes — saved automatically"
+            showHeader={false}
+            textareaClassName="min-h-[4rem] rounded-md border border-zinc-800/80 bg-zinc-900/30 px-3 py-2 focus-visible:ring-indigo-500/30"
+          />
+        </div>
 
         <div className="flex shrink-0 items-center justify-center gap-3 border-t border-zinc-800/60 px-5 py-3 sm:px-8">
           <button
@@ -130,32 +130,20 @@ export function GitHubSplitView({
             Prev
           </button>
 
-          <button
-            type="button"
+          <MarkCompleteButton
+            done={checkDone(selected.id)}
             disabled={locked}
+            labelPending="Mark pushed"
+            labelDone="Pushed"
             onClick={handleMarkComplete}
+            pulse={pulseId === selected.id}
             className={cn(
-              navBtn,
-              markBtn,
-              "ring-1",
-              isDone(selected.id)
+              "h-9 rounded-md px-4 text-xs sm:text-sm",
+              checkDone(selected.id)
                 ? "bg-emerald-500/10 text-emerald-400 ring-emerald-500/25"
-                : "bg-indigo-500/10 text-indigo-300 ring-indigo-500/25 hover:bg-indigo-500/15",
-              locked && "cursor-not-allowed opacity-50"
+                : "bg-indigo-500/10 text-indigo-300 ring-indigo-500/25 hover:bg-indigo-500/15"
             )}
-          >
-            {isDone(selected.id) ? (
-              <>
-                <Check className="h-4 w-4 shrink-0" />
-                Pushed
-              </>
-            ) : (
-              <>
-                <Circle className="h-4 w-4 shrink-0" />
-                Mark pushed
-              </>
-            )}
-          </button>
+          />
 
           <button
             type="button"
@@ -181,7 +169,7 @@ export function GitHubSplitView({
           <FileList
             items={items}
             selectedId={selectedId}
-            isDone={isDone}
+            isDone={checkDone}
             onSelect={setSelectedId}
             compact
           />
@@ -196,7 +184,7 @@ export function GitHubSplitView({
         <FileList
           items={items}
           selectedId={selectedId}
-          isDone={isDone}
+          isDone={checkDone}
           onSelect={setSelectedId}
         />
       </aside>
@@ -236,18 +224,7 @@ function FileList({
                 : "border-l-2 border-l-transparent hover:bg-zinc-900/40"
             )}
           >
-            <span
-              className={cn(
-                "flex h-6 w-6 shrink-0 items-center justify-center rounded text-[11px] font-medium tabular-nums",
-                active
-                  ? "bg-indigo-500/15 text-indigo-300"
-                  : done
-                    ? "text-emerald-400"
-                    : "text-zinc-600"
-              )}
-            >
-              {done ? <Check className="h-3.5 w-3.5" /> : index + 1}
-            </span>
+            <SidebarItemIndicator displayNum={index + 1} done={done} active={active} />
             <span
               className={cn(
                 "min-w-0 truncate font-mono text-xs leading-snug sm:text-[13px]",

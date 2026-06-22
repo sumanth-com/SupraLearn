@@ -29,16 +29,18 @@ export default function InterviewWeekPage({ params }: { params: Promise<{ id: st
     !isPack && weekId ? s.isModuleWeekLocked("interview", weekId) : false
   );
   const isDone = useProgressStore((s) => s.isDone);
+  const progress = useProgressStore((s) => s.progress);
   const toggleComplete = useProgressStore((s) => s.toggleComplete);
-  const getNote = useProgressStore((s) => s.getNote);
-  const setNote = useProgressStore((s) => s.setNote);
   const isBookmarked = useProgressStore((s) => s.isBookmarked);
   const toggleBookmark = useProgressStore((s) => s.toggleBookmark);
 
   const categories = (isPack ? pack?.categories : week?.interviewQuestions) ?? [];
   const title = (isPack ? pack?.title : week?.title) ?? "Interview";
   const total = countInterviewItems(categories);
-  const done = countInterviewDone(categories, isDone);
+  const done = useMemo(
+    () => countInterviewDone(categories, (id) => Boolean(progress.completed[id])),
+    [categories, progress]
+  );
   const progressPct = total ? Math.round((done / total) * 100) : 0;
   const displayPct = !isPack && week ? (weekProgress?.interview.percentage ?? progressPct) : progressPct;
 
@@ -90,8 +92,6 @@ export default function InterviewWeekPage({ params }: { params: Promise<{ id: st
         categories={categories}
         isDone={isDone}
         onToggle={toggleComplete}
-        getNote={getNote}
-        setNote={setNote}
         isBookmarked={isBookmarked}
         onToggleBookmark={toggleBookmark}
       />

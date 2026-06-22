@@ -1,11 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Bookmark, Check, ChevronLeft, ChevronRight, Circle, MessageSquare } from "lucide-react";
+import { Bookmark, ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
 import type { CurriculumChecklistItem } from "@/curriculum/types";
 import type { CurriculumInterviewQuestion } from "@/curriculum/types";
 import { InterviewAnswer } from "@/components/shared/interview-answer";
-import { Textarea } from "@/components/ui/textarea";
+import { EntityNoteTextarea } from "@/components/shared/entity-note-textarea";
+import {
+  learnNavBtn,
+  MarkCompleteButton,
+  SidebarItemIndicator,
+} from "@/components/shared/learn-mark-controls";
+import { useProgressStore } from "@/store/use-progress-store";
 import { cn } from "@/lib/utils";
 import { useStoreHydrated } from "@/hooks/use-store-hydrated";
 
@@ -25,17 +31,13 @@ interface InterviewSplitViewProps {
   isDone: (id: string) => boolean;
   onToggle: (id: string) => void;
   getQuestion: (id: string) => CurriculumInterviewQuestion | undefined;
+  /** @deprecated Notes persist automatically via EntityNoteTextarea */
   getNote?: (id: string) => string;
+  /** @deprecated Notes persist automatically via EntityNoteTextarea */
   setNote?: (id: string, note: string) => void;
   isBookmarked?: (id: string) => boolean;
   onToggleBookmark?: (id: string) => void;
 }
-
-const navBtn =
-  "inline-flex h-8 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 text-xs font-medium transition-colors ring-1 sm:text-sm";
-
-const markBtn =
-  "min-w-[7.75rem] px-3.5 sm:min-w-[8.5rem] sm:px-4";
 
 export function InterviewSplitView({
   sections,
@@ -43,11 +45,12 @@ export function InterviewSplitView({
   isDone,
   onToggle,
   getQuestion,
-  getNote,
-  setNote,
   isBookmarked,
   onToggleBookmark,
 }: InterviewSplitViewProps) {
+  const completed = useProgressStore((s) => s.progress.completed);
+  const checkDone = (id: string) => Boolean(completed[id]) || isDone(id);
+
   const flatItems = useMemo(() => {
     const result: FlatItem[] = [];
     let index = 0;
@@ -65,6 +68,7 @@ export function InterviewSplitView({
   }, [sections]);
 
   const [selectedId, setSelectedId] = useState(flatItems[0]?.id ?? "");
+  const [pulseId, setPulseId] = useState<string | null>(null);
   const hydrated = useStoreHydrated();
 
   useEffect(() => {
@@ -76,9 +80,10 @@ export function InterviewSplitView({
   const selectedIndex = flatItems.findIndex((t) => t.id === selectedId);
   const selected = flatItems[selectedIndex] ?? flatItems[0];
   const question = selected ? getQuestion(selected.id) : undefined;
-  const completedCount = flatItems.filter((t) => isDone(t.id)).length;
+  const completedCount = flatItems.filter((t) => checkDone(t.id)).length;
   const isFirst = selectedIndex <= 0;
   const isLast = selectedIndex >= flatItems.length - 1;
+  const selectedDone = selected ? checkDone(selected.id) : false;
 
   const goPrevious = () => {
     if (!isFirst) setSelectedId(flatItems[selectedIndex - 1].id);
@@ -89,8 +94,11 @@ export function InterviewSplitView({
   };
 
   const handleMarkComplete = () => {
+    if (!selected) return;
+    const wasDone = checkDone(selected.id);
     onToggle(selected.id);
-    if (!isLast && !isDone(selected.id)) {
+    if (!wasDone) setPulseId(selected.id);
+    if (!isLast && !wasDone) {
       setSelectedId(flatItems[selectedIndex + 1].id);
     }
   };
@@ -140,20 +148,7 @@ export function InterviewSplitView({
             <InterviewAnswer question={question} className="h-full" hideTitle />
           </div>
 
-          {setNote && getNote && (
-            <div className="flex min-h-0 flex-[2] flex-col overflow-hidden rounded-lg border border-zinc-800/80 bg-zinc-900/40">
-              <p className="shrink-0 border-b border-zinc-800/60 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                Notes
-              </p>
-              <Textarea
-                value={getNote(selected.id)}
-                onChange={(e) => setNote(selected.id, e.target.value)}
-                placeholder="Write your learnings here — saved automatically..."
-                className="!min-h-0 min-h-0 flex-1 resize-none rounded-none border-0 bg-transparent px-3 py-2 text-sm focus-visible:ring-0"
-                disabled={locked}
-              />
-            </div>
-          )}
+          <EntityNoteTextarea entityId={selected.id} disabled={locked} className="flex-[2]" />
 
           <div className="flex shrink-0 justify-center gap-2 pt-0.5">
             <button
@@ -161,7 +156,7 @@ export function InterviewSplitView({
               disabled={isFirst}
               onClick={goPrevious}
               className={cn(
-                navBtn,
+                learnNavBtn,
                 isFirst
                   ? "cursor-not-allowed bg-zinc-900/50 text-zinc-600 ring-zinc-800"
                   : "bg-zinc-800/80 text-zinc-200 ring-zinc-700 hover:bg-zinc-800"
@@ -171,38 +166,21 @@ export function InterviewSplitView({
               <span className="hidden sm:inline">Prev</span>
             </button>
 
-            <button
-              type="button"
+            <MarkCompleteButton
+              done={selectedDone}
               disabled={locked}
+              labelPending="Mark mastered"
+              labelDone="Mastered"
               onClick={handleMarkComplete}
-              className={cn(
-                navBtn,
-                markBtn,
-                isDone(selected.id)
-                  ? "bg-emerald-500/10 text-emerald-400 ring-emerald-500/30"
-                  : "bg-indigo-500/10 text-indigo-300 ring-indigo-500/30 hover:bg-indigo-500/15",
-                locked && "cursor-not-allowed opacity-50"
-              )}
-            >
-              {isDone(selected.id) ? (
-                <>
-                  <Check className="h-3.5 w-3.5 shrink-0" />
-                  Mastered
-                </>
-              ) : (
-                <>
-                  <Circle className="h-3.5 w-3.5 shrink-0" />
-                  Mark mastered
-                </>
-              )}
-            </button>
+              pulse={pulseId === selected.id}
+            />
 
             <button
               type="button"
               disabled={isLast}
               onClick={goNext}
               className={cn(
-                navBtn,
+                learnNavBtn,
                 isLast
                   ? "cursor-not-allowed bg-zinc-900/50 text-zinc-600 ring-zinc-800"
                   : "bg-zinc-800/80 text-zinc-200 ring-zinc-700 hover:bg-zinc-800"
@@ -231,7 +209,7 @@ export function InterviewSplitView({
                 {section.items.map((item) => {
                   const flat = flatItems.find((f) => f.id === item.id)!;
                   const active = item.id === selectedId;
-                  const done = isDone(item.id);
+                  const done = checkDone(item.id);
                   const displayNum = flat.globalIndex + 1;
 
                   return (
@@ -246,18 +224,7 @@ export function InterviewSplitView({
                           : "hover:bg-zinc-800/40"
                       )}
                     >
-                      <span
-                        className={cn(
-                          "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded text-[10px] font-semibold tabular-nums",
-                          active
-                            ? "bg-indigo-500/20 text-indigo-300"
-                            : done
-                              ? "bg-emerald-500/15 text-emerald-400"
-                              : "bg-zinc-800 text-zinc-500"
-                        )}
-                      >
-                        {done ? <Check className="h-3 w-3" /> : displayNum}
-                      </span>
+                      <SidebarItemIndicator displayNum={displayNum} done={done} active={active} />
                       <span
                         className={cn(
                           "text-xs leading-snug sm:text-sm",

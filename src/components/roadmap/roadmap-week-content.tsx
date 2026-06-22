@@ -12,16 +12,12 @@ interface RoadmapWeekContentProps {
   week: CurriculumWeekDefinition;
   isDone: (id: string) => boolean;
   onToggle: (id: string) => void;
-  getNote: (id: string) => string;
-  setNote: (id: string, note: string) => void;
 }
 
 export function RoadmapWeekContent({
   week,
   isDone,
   onToggle,
-  getNote,
-  setNote,
 }: RoadmapWeekContentProps) {
   const sections = useMemo(() => flattenWeekLessonSections(week), [week]);
 
@@ -33,8 +29,7 @@ export function RoadmapWeekContent({
         isDone={isDone}
         onToggle={onToggle}
         getDetail={(id, title, _kind) => getRoadmapItemDetail(week, id, title)}
-        getNote={getNote}
-        setNote={setNote}
+        sidebarTitle="Lessons"
       />
     </div>
   );

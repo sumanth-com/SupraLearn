@@ -273,7 +273,7 @@ function WelcomeBanner({
     return () => window.clearInterval(id);
   }, []);
 
-  const dayLine = now.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+  const dayLine = now.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
 
   return (
     <motion.div

@@ -23,15 +23,20 @@ export default function CommunicationWeekPage({
   const { weekId: weekIdParam } = use(params);
   const weekId = parseInt(weekIdParam, 10);
   const week = getCommunicationWeek(weekId);
+  const progress = useProgressStore((s) => s.progress);
   const isLocked = useProgressStore((s) => s.isModuleWeekLocked("communication", weekId));
   const isDone = useProgressStore((s) => s.isDone);
   const toggleComplete = useProgressStore((s) => s.toggleComplete);
-  const getNote = useProgressStore((s) => s.getNote);
-  const setNote = useProgressStore((s) => s.setNote);
 
   const skill = week?.skill;
-  const progressPct = skill ? getCommunicationWeekProgress(skill, isDone) : 0;
-  const stats = skill ? getAiSkillStats(skill, isDone) : null;
+  const progressPct = useMemo(() => {
+    if (!skill) return 0;
+    return getCommunicationWeekProgress(skill, (id) => Boolean(progress.completed[id]));
+  }, [skill, progress]);
+  const stats = useMemo(() => {
+    if (!skill) return null;
+    return getAiSkillStats(skill, (id) => Boolean(progress.completed[id]));
+  }, [skill, progress]);
 
   useTrackResumePosition(
     "communication",
@@ -129,8 +134,7 @@ export default function CommunicationWeekPage({
             isDone={isDone}
             onToggle={toggleComplete}
             getDetail={(id, title, kind) => getCommunicationDetail(id, title, kind)}
-            getNote={getNote}
-            setNote={setNote}
+            sidebarTitle="Topics"
           />
         </div>
       </div>
