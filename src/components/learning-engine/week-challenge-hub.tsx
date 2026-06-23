@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Bookmark, ChevronRight, Star } from "lucide-react";
 import type { LearnDifficulty, LearnLesson, LearnWeekBundle } from "@/learning-engine/types";
 import { lessonEntityId } from "@/learning-engine/types";
@@ -77,7 +78,19 @@ const DIFFICULTY_COLORS: Record<LearnDifficulty, string> = {
 };
 
 export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
-  const [activeTopic, setActiveTopic] = useState<string>("all");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const validTopicSlugs = useMemo(
+    () => new Set(week.topics.map((t) => t.topic.slug)),
+    [week.topics]
+  );
+
+  const topicFromUrl = searchParams.get("topic");
+  const initialTopic =
+    topicFromUrl && validTopicSlugs.has(topicFromUrl) ? topicFromUrl : "all";
+
+  const [activeTopic, setActiveTopic] = useState(initialTopic);
   const [page, setPage] = useState(0);
   const [showSolved, setShowSolved] = useState(true);
   const [showUnsolved, setShowUnsolved] = useState(true);
@@ -85,6 +98,26 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
   const [diffEasy, setDiffEasy] = useState(true);
   const [diffMedium, setDiffMedium] = useState(true);
   const [diffHard, setDiffHard] = useState(true);
+
+  useEffect(() => {
+    const topic = searchParams.get("topic");
+    const next = topic && validTopicSlugs.has(topic) ? topic : "all";
+    setActiveTopic(next);
+  }, [searchParams, validTopicSlugs]);
+
+  const syncTopicUrl = useCallback(
+    (slug: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (slug === "all") {
+        params.delete("topic");
+      } else {
+        params.set("topic", slug);
+      }
+      const qs = params.toString();
+      router.replace(`/roadmap/week/${week.weekId}${qs ? `?${qs}` : ""}`, { scroll: false });
+    },
+    [router, searchParams, week.weekId]
+  );
 
   const isDoneFn = useProgressStore((s) => s.isDone);
   const isBookmarkedFn = useProgressStore((s) => s.isBookmarked);
@@ -157,6 +190,7 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
   const selectTopic = (slug: string) => {
     setActiveTopic(slug);
     setPage(0);
+    syncTopicUrl(slug);
   };
 
   const pointsToNext = progress.total - progress.completed;

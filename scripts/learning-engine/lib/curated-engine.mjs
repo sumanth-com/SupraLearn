@@ -338,11 +338,14 @@ export function generateCuratedProblems(slug, topicTitle, category, topicIndex =
   const quotas = getQuotasForTopic(slug, category, topicIndex, topicCount);
   const out = { easy: [], medium: [], hard: [] };
 
+  let globalIndex = 0;
   for (const difficulty of DIFFICULTIES) {
     const tiers = quotas[difficulty] ?? [];
     for (const { type, count } of tiers) {
       for (let i = 0; i < count; i++) {
-        out[difficulty].push(generateJavaTypedProblem(slug, topicTitle, category, difficulty, type, i));
+        out[difficulty].push(
+          generateJavaTypedProblem(slug, topicTitle, category, difficulty, type, globalIndex++)
+        );
       }
     }
   }

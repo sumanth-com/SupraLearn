@@ -79,6 +79,35 @@ const TOPIC_PROBLEMS = {
       output: "yes",
       input: "No input",
     },
+    {
+      title: "Bytecode Runs on JVM",
+      statement: "Print the term for portable Java instructions executed by the JVM.",
+      code: (cn) => javaSolution(cn, [], "", '        System.out.println("bytecode");'),
+      output: "bytecode",
+      input: "No input",
+    },
+    {
+      title: "Write Once Run Anywhere",
+      statement: "Print the slogan that describes Java's cross-platform ability.",
+      code: (cn) =>
+        javaSolution(cn, [], "", '        System.out.println("Write Once, Run Anywhere");'),
+      output: "Write Once, Run Anywhere",
+      input: "No input",
+    },
+    {
+      title: "Java is Object-Oriented",
+      statement: "Print the programming paradigm Java primarily follows.",
+      code: (cn) => javaSolution(cn, [], "", '        System.out.println("object-oriented");'),
+      output: "object-oriented",
+      input: "No input",
+    },
+    {
+      title: "Oracle Owns Java Trademark",
+      statement: "Print the company associated with the Java trademark today.",
+      code: (cn) => javaSolution(cn, [], "", '        System.out.println("Oracle");'),
+      output: "Oracle",
+      input: "No input",
+    },
   ],
   "jdk-jre-jvm": [
     {
@@ -115,6 +144,34 @@ const TOPIC_PROBLEMS = {
       statement: "Print which one developers need to write and compile code.",
       code: (cn) => javaSolution(cn, [], "", '        System.out.println("JDK");'),
       output: "JDK",
+      input: "No input",
+    },
+    {
+      title: "JIT Compiler Role",
+      statement: "Print what JIT optimizes at runtime (hot bytecode/native code).",
+      code: (cn) => javaSolution(cn, [], "", '        System.out.println("hot bytecode to native code");'),
+      output: "hot bytecode to native code",
+      input: "No input",
+    },
+    {
+      title: "Garbage Collector in JVM",
+      statement: "Print the JVM subsystem that reclaims unused heap memory.",
+      code: (cn) => javaSolution(cn, [], "", '        System.out.println("Garbage Collector");'),
+      output: "Garbage Collector",
+      input: "No input",
+    },
+    {
+      title: "java vs javac Commands",
+      statement: "Print the command used to compile a .java file.",
+      code: (cn) => javaSolution(cn, [], "", '        System.out.println("javac");'),
+      output: "javac",
+      input: "No input",
+    },
+    {
+      title: "Classpath Purpose",
+      statement: "Print what the classpath tells the JVM to locate.",
+      code: (cn) => javaSolution(cn, [], "", '        System.out.println("classes and libraries");'),
+      output: "classes and libraries",
       input: "No input",
     },
   ],
@@ -173,6 +230,43 @@ const TOPIC_PROBLEMS = {
       output: "9 5",
       input: "a=5, b=9",
     },
+    {
+      title: "final Variable Assignment",
+      statement: "Declare final int MAX = 100 and print it.",
+      code: (cn) =>
+        javaSolution(cn, [], "", "        final int MAX = 100;\n        System.out.println(MAX);"),
+      output: "100",
+      input: "MAX=100",
+    },
+    {
+      title: "long Data Type Range",
+      statement: "Store long population = 8000000000L and print it.",
+      code: (cn) =>
+        javaSolution(
+          cn,
+          [],
+          "",
+          "        long population = 8000000000L;\n        System.out.println(population);"
+        ),
+      output: "8000000000",
+      input: "population=8000000000L",
+    },
+    {
+      title: "float Literal Suffix",
+      statement: "Declare float rate = 3.14f and print it.",
+      code: (cn) =>
+        javaSolution(cn, [], "", "        float rate = 3.14f;\n        System.out.println(rate);"),
+      output: "3.14",
+      input: "rate=3.14f",
+    },
+    {
+      title: "Valid Variable Name",
+      statement: "Declare int studentAge = 18 and print it.",
+      code: (cn) =>
+        javaSolution(cn, [], "", "        int studentAge = 18;\n        System.out.println(studentAge);"),
+      output: "18",
+      input: "studentAge=18",
+    },
   ],
   operators: [
     {
@@ -210,6 +304,41 @@ const TOPIC_PROBLEMS = {
         javaSolution(cn, [], "", "        int x = 10;\n        x += 5;\n        System.out.println(x);"),
       output: "15",
       input: "x=10, add 5",
+    },
+    {
+      title: "Increment Operator",
+      statement: "Start count=4, use ++count, then print count.",
+      code: (cn) =>
+        javaSolution(cn, [], "", "        int count = 4;\n        ++count;\n        System.out.println(count);"),
+      output: "5",
+      input: "count=4",
+    },
+    {
+      title: "Ternary Operator",
+      statement: "Print Pass if score>=50 else Fail for score=72.",
+      code: (cn) =>
+        javaSolution(
+          cn,
+          [],
+          "",
+          "        int score = 72;\n        System.out.println(score >= 50 ? \"Pass\" : \"Fail\");"
+        ),
+      output: "Pass",
+      input: "score=72",
+    },
+    {
+      title: "Bitwise AND",
+      statement: "Print result of 12 & 10.",
+      code: (cn) => javaSolution(cn, [], "", "        System.out.println(12 & 10);"),
+      output: "8",
+      input: "12 & 10",
+    },
+    {
+      title: "Unary NOT Operator",
+      statement: "Print result of !false.",
+      code: (cn) => javaSolution(cn, [], "", "        System.out.println(!false);"),
+      output: "true",
+      input: "!false",
     },
   ],
   "type-casting": [
@@ -262,6 +391,47 @@ const TOPIC_PROBLEMS = {
         javaSolution(cn, [], "", "        long big = 100L;\n        int small = (int) big;\n        System.out.println(small);"),
       output: "100",
       input: "100L",
+    },
+    {
+      title: "Parse String to int",
+      statement: "Parse String num = \"42\" to int and print it.",
+      code: (cn) =>
+        javaSolution(
+          cn,
+          [],
+          "",
+          '        String num = "42";\n        int value = Integer.parseInt(num);\n        System.out.println(value);'
+        ),
+      output: "42",
+      input: 'num="42"',
+    },
+    {
+      title: "byte Promotion to int",
+      statement: "Store byte b=127, promote to int, and print.",
+      code: (cn) =>
+        javaSolution(cn, [], "", "        byte b = 127;\n        int promoted = b;\n        System.out.println(promoted);"),
+      output: "127",
+      input: "b=127",
+    },
+    {
+      title: "Cast in Expression",
+      statement: "Print (int)(7.8 + 0.4) after casting the sum to int.",
+      code: (cn) => javaSolution(cn, [], "", "        System.out.println((int)(7.8 + 0.4));"),
+      output: "8",
+      input: "7.8 + 0.4",
+    },
+    {
+      title: "Automatic Widening Chain",
+      statement: "Assign int n=5 to long then double; print the double value.",
+      code: (cn) =>
+        javaSolution(
+          cn,
+          [],
+          "",
+          "        int n = 5;\n        long extended = n;\n        double precise = extended;\n        System.out.println(precise);"
+        ),
+      output: "5.0",
+      input: "n=5",
     },
   ],
   "scanner-input": [
@@ -325,6 +495,47 @@ const TOPIC_PROBLEMS = {
       output: "Even",
       input: "14",
     },
+    {
+      title: "Read double from Scanner",
+      statement: "Simulate reading height=1.75 from Scanner; print: Height: 1.75",
+      code: (cn) =>
+        javaSolution(
+          cn,
+          [],
+          "",
+          "        double height = 1.75;\n        System.out.println(\"Height: \" + height);"
+        ),
+      output: "Height: 1.75",
+      input: "1.75",
+    },
+    {
+      title: "Read boolean from Scanner",
+      statement: "Simulate reading active=true; print: Active: true",
+      code: (cn) =>
+        javaSolution(
+          cn,
+          [],
+          "",
+          "        boolean active = true;\n        System.out.println(\"Active: \" + active);"
+        ),
+      output: "Active: true",
+      input: "true",
+    },
+    {
+      title: "nextLine vs next",
+      statement: "Simulate reading full line \"Hello World\"; print it exactly.",
+      code: (cn) =>
+        javaSolution(cn, [], "", '        String line = "Hello World";\n        System.out.println(line);'),
+      output: "Hello World",
+      input: "Hello World",
+    },
+    {
+      title: "Close Scanner Resource",
+      statement: "Print the method name used to release Scanner resources.",
+      code: (cn) => javaSolution(cn, [], "", '        System.out.println("close");'),
+      output: "close",
+      input: "No input",
+    },
   ],
   "first-java-program": [
     {
@@ -376,12 +587,52 @@ const TOPIC_PROBLEMS = {
       output: "My name is Java Learner",
       input: 'name="Java Learner"',
     },
+    {
+      title: "Single-Line Comment",
+      statement: "Print the symbol that starts a single-line comment in Java.",
+      code: (cn) => javaSolution(cn, [], "", '        System.out.println("//");'),
+      output: "//",
+      input: "No input",
+    },
+    {
+      title: "Block Comment Syntax",
+      statement: "Print the opening token for a block comment.",
+      code: (cn) => javaSolution(cn, [], "", '        System.out.println("/*");'),
+      output: "/*",
+      input: "No input",
+    },
+    {
+      title: "Semicolon Rule",
+      statement: "Print whether every Java statement must end with a semicolon (yes/no).",
+      code: (cn) => javaSolution(cn, [], "", '        System.out.println("yes");'),
+      output: "yes",
+      input: "No input",
+    },
+    {
+      title: "Curly Brace Blocks",
+      statement: "Print the character pair that wraps a code block in Java.",
+      code: (cn) => javaSolution(cn, [], "", '        System.out.println("{ }");'),
+      output: "{ }",
+      input: "No input",
+    },
   ],
 };
 
 function pickTemplate(slug, index) {
   const list = TOPIC_PROBLEMS[slug] ?? TOPIC_PROBLEMS["first-java-program"];
-  return list[index % list.length];
+  if (index >= list.length) {
+    throw new Error(`Week 1 topic "${slug}" needs more templates (requested index ${index}, have ${list.length})`);
+  }
+  return list[index];
+}
+
+function injectBeginnerBug(code, index) {
+  const bugs = [
+    (c) => c.replace(";", ""),
+    (c) => c.replace('System.out.println', "System.out.print"),
+    (c) => c.replace(/"([^"]*)"/, '"$1" + "typo"'),
+  ];
+  return bugs[index % bugs.length](code);
 }
 
 function typeSuffix(problemType, index) {
@@ -405,6 +656,7 @@ export function buildWeek1FundamentalsProblem(slug, topicTitle, category, diffic
   if (problemType === "find-bug") {
     statement = `The following ${topicLabel} program has a beginner mistake. Fix it and explain.\n\n${statement}`;
     title = `Fix: ${tpl.title}`;
+    code = injectBeginnerBug(code, index);
   } else if (problemType === "output-prediction") {
     statement = `Predict the output for this ${topicLabel} program.\n\n${statement}`;
     title = `Output: ${tpl.title}`;

@@ -2,12 +2,28 @@
 
 import { Suspense, use } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Lock } from "lucide-react";
 import { getLearningWeek } from "@/learning-engine/loader";
 import { LearningEngineView } from "@/components/learning-engine/learning-engine-view";
 import { ChallengeMarkCompleteButton } from "@/components/learning-engine/challenge-mark-complete";
 import { Button } from "@/components/ui/button";
 import { useProgressStore } from "@/store/use-progress-store";
+
+function BackToChallengesLink({ weekId }: { weekId: number }) {
+  const searchParams = useSearchParams();
+  const topic = searchParams.get("topic");
+  const href = topic ? `/roadmap/week/${weekId}?topic=${encodeURIComponent(topic)}` : `/roadmap/week/${weekId}`;
+
+  return (
+    <Link href={href}>
+      <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2 text-xs text-zinc-400 hover:text-zinc-200">
+        <ArrowLeft className="h-3.5 w-3.5" />
+        Back to Challenges
+      </Button>
+    </Link>
+  );
+}
 
 function WeekLearnContent({ weekId }: { weekId: number }) {
   const week = getLearningWeek(weekId);
@@ -48,12 +64,9 @@ function WeekLearnContent({ weekId }: { weekId: number }) {
   return (
     <div className="fixed inset-0 z-10 flex flex-col overflow-hidden bg-[#0d0d0d] lg:left-64">
       <header className="flex h-11 shrink-0 items-center gap-3 border-b border-zinc-800 bg-[#0a0a0a] px-4">
-        <Link href={`/roadmap/week/${weekId}`}>
-          <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2 text-xs text-zinc-400 hover:text-zinc-200">
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to Challenges
-          </Button>
-        </Link>
+        <Suspense fallback={null}>
+          <BackToChallengesLink weekId={weekId} />
+        </Suspense>
         <h1 className="truncate text-sm font-medium text-zinc-300">{week.title}</h1>
         <Suspense fallback={null}>
           <ChallengeMarkCompleteButton weekId={weekId} />

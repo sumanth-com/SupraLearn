@@ -738,14 +738,14 @@ function generateTopicAwareProblems(slug, topicTitle, category, topicIndex, topi
   const quotas = getQuotasForTopic(slug, category, topicIndex, topicCount);
   const out = { easy: [], medium: [], hard: [] };
 
+  let globalIndex = 0;
   for (const difficulty of DIFFICULTIES) {
-    let index = 0;
     for (const { type, count } of quotas[difficulty] ?? []) {
       for (let i = 0; i < count; i++) {
         out[difficulty].push(
-          buildTopicAwareProblem(slug, topicTitle, category, difficulty, type, index)
+          buildTopicAwareProblem(slug, topicTitle, category, difficulty, type, globalIndex)
         );
-        index++;
+        globalIndex++;
       }
     }
   }
