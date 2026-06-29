@@ -544,6 +544,8 @@ export function CandyCrushRoadmap({
   }, [weeks, isLocked, hydrated]);
 
   const totalWeeks = weeks.length;
+  const displayPct = hydrated ? overallPct : 0;
+  const displayCompleted = hydrated ? completedCount : 0;
 
   return (
     <div className="min-h-screen bg-zinc-950 pb-16">
@@ -557,9 +559,13 @@ export function CandyCrushRoadmap({
                   <Trophy className="h-5 w-5 text-indigo-400" />
                 </div>
                 <div>
-                  <p className="text-xl font-bold tabular-nums text-zinc-100">{overallPct}%</p>
-                  <p className="text-xs text-zinc-500">
-                    {completedCount} of {totalWeeks} weeks done
+                  <p className="text-xl font-bold tabular-nums text-zinc-100" suppressHydrationWarning>
+                    {hydrated ? `${displayPct}%` : "\u00a0"}
+                  </p>
+                  <p className="text-xs text-zinc-500" suppressHydrationWarning>
+                    {hydrated
+                      ? `${displayCompleted} of ${totalWeeks} weeks done`
+                      : "\u00a0"}
                   </p>
                 </div>
               </div>
@@ -595,10 +601,14 @@ export function CandyCrushRoadmap({
           </h2>
           <ol className="list-none">
             {weeks.map((week, index) => {
-              const locked = isLocked(week.id);
-              const done = isCompleted(week.id);
-              const active = !locked && !done && week.id === currentWeekId;
-              const prevDone = index === 0 || isCompleted(weeks[index - 1].id);
+              const locked = hydrated ? isLocked(week.id) : week.id > 1;
+              const done = hydrated && isCompleted(week.id);
+              const active = hydrated
+                ? !locked && !done && week.id === currentWeekId
+                : week.id === 1;
+              const prevDone = hydrated
+                ? index === 0 || isCompleted(weeks[index - 1].id)
+                : false;
 
               return (
                 <WeekModuleCard
@@ -608,8 +618,8 @@ export function CandyCrushRoadmap({
                   locked={locked}
                   done={done}
                   active={active}
-                  pct={getWeekProgress(week.id).overall.percentage}
-                  justUnlocked={justUnlockedId === week.id}
+                  pct={hydrated ? getWeekProgress(week.id).overall.percentage : 0}
+                  justUnlocked={hydrated && justUnlockedId === week.id}
                   hydrated={hydrated}
                   isLast={index === weeks.length - 1}
                   prevDone={prevDone}
@@ -625,7 +635,7 @@ export function CandyCrushRoadmap({
           viewport={{ once: true }}
           className={cn(
             "mt-2 flex items-center gap-4 rounded-xl border p-5",
-            completedCount === totalWeeks
+            completedCount === totalWeeks && hydrated
               ? "border-amber-500/30 bg-amber-500/5"
               : "border-zinc-800/90 bg-zinc-900/30"
           )}
@@ -633,7 +643,7 @@ export function CandyCrushRoadmap({
           <div
             className={cn(
               "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border",
-              completedCount === totalWeeks
+              completedCount === totalWeeks && hydrated
                 ? "border-amber-500/30 bg-amber-500/10 text-amber-400"
                 : "border-zinc-800 bg-zinc-900 text-zinc-600"
             )}
