@@ -1,12 +1,14 @@
 import type { CurriculumWeekDefinition } from "@/curriculum/types";
 import { collectTrackableEntities } from "@/curriculum/entities";
+import { getLearningWeek, lessonEntityId } from "@/learning-engine/loader";
 import {
   COMMUNICATION_WEEKS,
   collectCommunicationIds,
   getCommunicationWeek,
 } from "@/curriculum/communication-skills";
-import { getTotalWeeks } from "@/curriculum/registry";
+import { getCurriculumWeeks, getTotalWeeks } from "@/curriculum/registry";
 import type { UserProgressState } from "@/store/progress-types";
+import { PROGRESS_VERSION } from "@/store/progress-types";
 import { UNLOCK_ALL_WEEKS } from "@/lib/feature-flags";
 import type { ProgressCounts } from "@/lib/progress-engine";
 
@@ -53,6 +55,15 @@ export interface ResumePosition {
   subtitle?: string;
   href: string;
   updatedAt: string;
+  topicSlug?: string;
+  topicTitle?: string;
+  lessonId?: string;
+  lessonTitle?: string;
+  entityId?: string;
+  difficulty?: string;
+  problemType?: string;
+  scrollKey?: string;
+  scrollY?: number;
 }
 
 const emptyCounts = (): ProgressCounts => ({ completed: 0, total: 0, percentage: 0 });
@@ -72,6 +83,181 @@ function idsOfType(week: CurriculumWeekDefinition, type: string): string[] {
   return collectTrackableEntities(week)
     .filter((e) => e.type === type)
     .map((e) => e.id);
+}
+
+/** Challenge-hub lessons only — matches WeekChallengeHub (no MCQ, week-scoped). */
+function hubChallengeLessonIds(week: CurriculumWeekDefinition): string[] {
+  const learnWeek = getLearningWeek(week.id);
+  if (!learnWeek) return idsOfType(week, "learning-lesson");
+
+  const ids: string[] = [];
+  for (const bundle of learnWeek.topics) {
+    for (const lesson of bundle.lessons) {
+      if (lesson.problemType === "mcq") continue;
+      if (lesson.weekId && lesson.weekId !== week.id) continue;
+      ids.push(
+        lessonEntityId({
+          weekId: week.id,
+          topicSlug: lesson.topicSlug ?? bundle.topic.slug,
+          id: lesson.id,
+        })
+      );
+    }
+  }
+  return ids;
+}
+
+export function getHubChallengeLessonIds(week: CurriculumWeekDefinition): string[] {
+  return hubChallengeLessonIds(week);
+}
+
+/** Entity IDs that count toward a module's week progress bar. */
+export function collectWeekModuleProgressIds(
+  week: CurriculumWeekDefinition,
+  module: LearningModule
+): string[] {
+  if (module === "communication") {
+    const comm = getCommunicationWeek(week.id);
+    return comm ? collectCommunicationIds(comm.skill) : [];
+  }
+
+  switch (module) {
+    case "roadmap":
+    case "practice":
+      return hubChallengeLessonIds(week);
+    case "ai-skills":
+      return [
+        ...idsOfType(week, "ai-topic"),
+        ...idsOfType(week, "ai-exercise"),
+        ...idsOfType(week, "ai-prompt"),
+      ];
+    case "projects":
+      return idsOfType(week, "project-complete");
+    case "github":
+      return idsOfType(week, "github-file");
+    case "interview":
+      return idsOfType(week, "interview-question");
+    default:
+      return [];
+  }
+}
+
+const JAVA_TRACK_MODULES: LearningModule[] = [
+  "roadmap",
+  "practice",
+  "ai-skills",
+  "projects",
+  "github",
+  "interview",
+];
+
+/** Modules that must all reach 100% before the next week unlocks everywhere. */
+export const UNIFIED_WEEK_MODULES: LearningModule[] = [
+  "practice",
+  "ai-skills",
+  "projects",
+  "github",
+  "interview",
+];
+
+export function isWeekFullyCompleteAcrossModules(
+  progress: UserProgressState,
+  weekId: number,
+  weeks: CurriculumWeekDefinition[]
+): boolean {
+  const week = weeks.find((w) => w.id === weekId);
+  if (!week) return false;
+
+  for (const module of UNIFIED_WEEK_MODULES) {
+    if (getModuleWeekProgress(module, weekId, week, progress).percentage < 100) {
+      return false;
+    }
+  }
+
+  const commWeek = getCommunicationWeek(weekId);
+  if (commWeek) {
+    if (getModuleWeekProgress("communication", weekId, undefined, progress).percentage < 100) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/** Mark every tracked item for a week across all learning modules and rebuild gates. */
+export function markWeekCompleteAllModules(
+  progress: UserProgressState,
+  weekId: number,
+  weeks: CurriculumWeekDefinition[]
+): UserProgressState {
+  const week = weeks.find((w) => w.id === weekId);
+  const ids = new Set<string>();
+
+  if (week) {
+    for (const module of JAVA_TRACK_MODULES) {
+      for (const id of collectWeekModuleProgressIds(week, module)) {
+        ids.add(id);
+      }
+    }
+  }
+
+  const commWeek = getCommunicationWeek(weekId);
+  if (commWeek) {
+    for (const id of collectCommunicationIds(commWeek.skill)) {
+      ids.add(id);
+    }
+  }
+
+  if (ids.size === 0) return progress;
+
+  const today = new Date().toISOString().split("T")[0];
+  const completed = { ...progress.completed };
+  const completionDates = { ...progress.completionDates };
+
+  for (const id of ids) {
+    completed[id] = true;
+    completionDates[id] = today;
+  }
+
+  const next = { ...progress, completed, completionDates };
+  return {
+    ...next,
+    moduleGates: rebuildModuleGatesFromProgress(getCurriculumWeeks(), next),
+  };
+}
+
+/** @deprecated use markWeekCompleteAllModules */
+export function markWeekHubChallengesComplete(
+  progress: UserProgressState,
+  weekId: number,
+  weeks: CurriculumWeekDefinition[]
+): UserProgressState {
+  return markWeekCompleteAllModules(progress, weekId, weeks);
+}
+
+export function weekNeedsAllModulesSeed(
+  progress: UserProgressState,
+  weekId: number,
+  weeks: CurriculumWeekDefinition[]
+): boolean {
+  const week = weeks.find((w) => w.id === weekId);
+  if (!week) return false;
+
+  for (const module of JAVA_TRACK_MODULES) {
+    if (module === "roadmap") continue;
+    if (isModuleWeekLocked(module, weekId + 1, progress)) return true;
+    if (getModuleWeekProgress(module, weekId, week, progress).percentage < 100) return true;
+  }
+
+  const commWeek = getCommunicationWeek(weekId);
+  if (commWeek) {
+    if (isModuleWeekLocked("communication", weekId + 1, progress)) return true;
+    if (getModuleWeekProgress("communication", weekId, undefined, progress).percentage < 100) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export function createDefaultModuleGates(): ModuleWeekGates {
@@ -106,12 +292,8 @@ export function getModuleWeekProgress(
 
   switch (module) {
     case "roadmap":
-      return countProgress(idsOfType(week, "day-item"), completed);
-    case "practice": {
-      const lessonIds = idsOfType(week, "learning-lesson");
-      const programmingIds = idsOfType(week, "programming-question");
-      return countProgress([...lessonIds, ...programmingIds], completed);
-    }
+    case "practice":
+      return countProgress(hubChallengeLessonIds(week), completed);
     case "ai-skills": {
       const aiIds = [
         ...idsOfType(week, "ai-topic"),
@@ -194,40 +376,55 @@ export function rebuildModuleGatesFromProgress(
   const gates = createDefaultModuleGates();
   const maxJavaWeek = weeks.length || getTotalWeeks();
 
-  for (const module of LEARNING_MODULES) {
-    if (module === "communication") {
-      for (const commWeek of COMMUNICATION_WEEKS) {
-        const pct = getModuleWeekProgress(module, commWeek.weekId, undefined, progress).percentage;
-        if (pct >= 100) {
-          gates.communication = unlockNextWeek(
-            gates.communication,
-            commWeek.weekId,
-            COMMUNICATION_WEEKS.length
-          );
-        }
-      }
-      continue;
-    }
-
-    for (const week of weeks) {
-      const pct = getModuleWeekProgress(module, week.id, week, progress).percentage;
-      if (pct >= 100) {
-        gates[module] = unlockNextWeek(gates[module], week.id, maxJavaWeek);
-      }
+  let consecutiveComplete = 0;
+  for (const week of weeks) {
+    if (isWeekFullyCompleteAcrossModules(progress, week.id, weeks)) {
+      consecutiveComplete = week.id;
+    } else {
+      break;
     }
   }
+
+  const unlockedWeekIds = Array.from(
+    { length: Math.min(consecutiveComplete + 1, maxJavaWeek) },
+    (_, i) => i + 1
+  );
+  const completedWeekIds = Array.from({ length: consecutiveComplete }, (_, i) => i + 1);
+
+  for (const module of JAVA_TRACK_MODULES) {
+    gates[module] = {
+      unlockedWeekIds: [...unlockedWeekIds],
+      completedWeekIds: [...completedWeekIds],
+    };
+  }
+
+  const maxCommWeek = COMMUNICATION_WEEKS.length;
+  gates.communication = {
+    unlockedWeekIds: Array.from(
+      { length: Math.min(consecutiveComplete + 1, maxCommWeek) },
+      (_, i) => i + 1
+    ),
+    completedWeekIds: Array.from({ length: Math.min(consecutiveComplete, maxCommWeek) }, (_, i) => i + 1),
+  };
 
   return gates;
 }
 
 export function migrateProgressStateV3(state: UserProgressState, weeks: CurriculumWeekDefinition[]): UserProgressState {
-  if (state.moduleGates && state.version >= 3) return state;
+  const withScroll = {
+    ...state,
+    scrollPositions: state.scrollPositions ?? {},
+  };
 
-  const moduleGates = rebuildModuleGatesFromProgress(weeks, state);
+  if (withScroll.moduleGates && withScroll.version >= 3) {
+    return { ...withScroll, version: PROGRESS_VERSION };
+  }
+
+  const moduleGates = rebuildModuleGatesFromProgress(weeks, withScroll);
 
   return {
-    ...state,
-    version: 3,
+    ...withScroll,
+    version: PROGRESS_VERSION,
     moduleGates,
     unlockedWeekIds: state.unlockedWeekIds?.length ? state.unlockedWeekIds : [1],
     completedWeekIds: state.completedWeekIds ?? [],

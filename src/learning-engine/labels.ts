@@ -55,6 +55,8 @@ export function weekProgress(
   let total = 0;
   for (const topic of week.topics) {
     for (const lesson of topic.lessons) {
+      if (lesson.problemType === "mcq") continue;
+      if (lesson.weekId && lesson.weekId !== week.weekId) continue;
       total++;
       const id = lessonEntityId({ weekId: week.weekId, topicSlug: lesson.topicSlug, id: lesson.id });
       if (isDone(id)) completed++;

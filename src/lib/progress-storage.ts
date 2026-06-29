@@ -12,7 +12,7 @@ export function getWeekProjectIds(week: CurriculumWeekDefinition): string[] {
 export interface ExportedProgress {
   version: number;
   exportedAt: string;
-  app: "prathyu-academy";
+  app: "prathyu-academy" | "supracodez";
   progress: unknown;
   profile: unknown;
   studySessions: unknown;
@@ -25,8 +25,11 @@ export interface ExportedProgress {
 
 export function parseImportedProgress(raw: string): ExportedProgress {
   const data = JSON.parse(raw) as ExportedProgress;
-  if (data.app !== "prathyu-academy" || !data.progress) {
+  if (data.app && data.app !== "prathyu-academy" && data.app !== "supracodez") {
     throw new Error("Invalid backup file. Please select a SupraCodez export.");
+  }
+  if (!data.progress) {
+    throw new Error("Invalid backup file. Missing progress data.");
   }
   return data;
 }

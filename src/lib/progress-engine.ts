@@ -3,6 +3,7 @@ import { collectTrackableEntities, getEntityIdsByType } from "@/curriculum/entit
 import type { UserProgressState } from "@/store/progress-types";
 import {
   getModuleCurrentWeek,
+  getModuleWeekProgress,
   isModuleWeekCompleted,
   isModuleWeekLocked,
 } from "@/lib/module-progress";
@@ -88,11 +89,7 @@ export function computeWeekProgress(
   const github = countProgress(idsOfType(week, "github-file"), completed);
   const interview = countProgress(idsOfType(week, "interview-question"), completed);
 
-  const allEntities = collectTrackableEntities(week);
-  const overall = countProgress(
-    allEntities.map((e) => e.id),
-    completed
-  );
+  const overall = getModuleWeekProgress("practice", week.id, week, progress);
 
   return {
     overall,
@@ -126,7 +123,8 @@ export function computeGlobalStats(
 
   weeks.forEach((week) => {
     const bp = computeWeekProgress(week, progress);
-    overallSum += bp.overall.percentage;
+    const practice = getModuleWeekProgress("practice", week.id, week, progress);
+    overallSum += practice.percentage;
     topicsCompleted += bp.dayItems.completed;
     topicsTotal += bp.dayItems.total;
     programmingCompleted += bp.programming.completed;
@@ -159,15 +157,15 @@ export function computeGlobalStats(
 }
 
 export function isWeekLocked(weekId: number, progress: UserProgressState): boolean {
-  return isModuleWeekLocked("roadmap", weekId, progress);
+  return isModuleWeekLocked("practice", weekId, progress);
 }
 
 export function isWeekCompleted(weekId: number, progress: UserProgressState): boolean {
-  return isModuleWeekCompleted("roadmap", weekId, progress);
+  return isModuleWeekCompleted("practice", weekId, progress);
 }
 
 export function getCurrentWeekId(weeks: CurriculumWeekDefinition[], progress: UserProgressState): number {
-  return getModuleCurrentWeek("roadmap", progress, weeks.length);
+  return getModuleCurrentWeek("practice", progress, weeks.length);
 }
 
 export function getTodayProgress(

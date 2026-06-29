@@ -3,16 +3,9 @@
 import { useEffect, useRef } from "react";
 import { useProgressStore } from "@/store/use-progress-store";
 import { useCurriculum } from "@/hooks/use-curriculum";
-import { triggerConfetti } from "@/lib/confetti";
-import {
-  COMMUNICATION_WEEKS,
-} from "@/curriculum/communication-skills";
-import {
-  getModuleWeekProgress,
-  LEARNING_MODULES,
-  MODULE_LABELS,
-  type LearningModule,
-} from "@/lib/module-progress";
+import { getWeekById } from "@/curriculum/java-roadmap/curriculum";
+import { isWeekFullyCompleteAcrossModules } from "@/lib/module-progress";
+import { fireWeekCelebration } from "@/components/shared/week-completion-celebration";
 
 /** Runs once on app load: restore profile, daily goal, streak. */
 export function ProgressBootstrap() {
@@ -25,47 +18,33 @@ export function ProgressBootstrap() {
   return null;
 }
 
-/** Unlocks next week per module when that module's week hits 100%. */
+/** Celebrates when a week is fully complete across every learning module. */
 export function ModuleCompletionWatcher() {
   const weeks = useCurriculum();
   const progress = useProgressStore((s) => s.progress);
-  const completeModuleWeek = useProgressStore((s) => s.completeModuleWeek);
-  const isModuleWeekCompleted = useProgressStore((s) => s.isModuleWeekCompleted);
-  const prevPctRef = useRef<Record<string, number>>({});
+  const prevCompleteRef = useRef<Record<number, boolean>>({});
+  const initializedRef = useRef(false);
 
   useEffect(() => {
-    LEARNING_MODULES.forEach((module) => {
-      const weekIds =
-        module === "communication"
-          ? COMMUNICATION_WEEKS.map((w) => w.weekId)
-          : weeks.map((w) => w.id);
+    weeks.forEach((week) => {
+      const complete = isWeekFullyCompleteAcrossModules(progress, week.id, weeks);
+      const prev = prevCompleteRef.current[week.id] ?? false;
 
-      weekIds.forEach((weekId) => {
-        const key = `${module}-${weekId}`;
-        const week = weeks.find((w) => w.id === weekId);
-        const pct = getModuleWeekProgress(module, weekId, week, progress).percentage;
-        const prev = prevPctRef.current[key] ?? 0;
+      if (initializedRef.current && !prev && complete) {
+        const meta = getWeekById(week.id);
+        const nextWeek = week.id + 1;
+        fireWeekCelebration({
+          completedWeekId: week.id,
+          nextWeekId: nextWeek <= weeks.length ? nextWeek : null,
+          weekTitle: meta?.title ?? `Week ${week.id}`,
+          weekEmoji: meta?.emoji,
+        });
+      }
 
-        if (prev < 100 && pct >= 100 && !isModuleWeekCompleted(module, weekId)) {
-          triggerConfetti();
-          completeModuleWeek(module, weekId);
-          const nextWeek = weekId + 1;
-          if (nextWeek <= weekIds.length) {
-            try {
-              sessionStorage.setItem(
-                "module-unlock-celebrate",
-                JSON.stringify({ module, weekId: nextWeek })
-              );
-            } catch {
-              /* ignore */
-            }
-          }
-        }
-
-        prevPctRef.current[key] = pct;
-      });
+      prevCompleteRef.current[week.id] = complete;
     });
-  }, [weeks, progress.completed, progress.moduleGates, completeModuleWeek, isModuleWeekCompleted]);
+    initializedRef.current = true;
+  }, [weeks, progress.completed]);
 
   return null;
 }
@@ -75,4 +54,4 @@ export function WeekCompletionWatcher() {
   return <ModuleCompletionWatcher />;
 }
 
-export { MODULE_LABELS, type LearningModule };
+export { MODULE_LABELS, type LearningModule } from "@/lib/module-progress";

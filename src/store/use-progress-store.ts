@@ -28,17 +28,20 @@ import {
   type ProgressCounts,
 } from "@/lib/progress-engine";
 import {
-  applyModuleCompletionUnlock,
   getModuleCurrentWeek,
   getModuleWeekProgress,
   isModuleWeekCompleted,
   isModuleWeekLocked,
+  isWeekFullyCompleteAcrossModules,
+  markWeekCompleteAllModules,
   migrateProgressStateV3,
   rebuildModuleGatesFromProgress,
   type LearningModule,
 } from "@/lib/module-progress";
 import { COMMUNICATION_WEEKS } from "@/curriculum/communication-skills";
 import { createIdbPersistStorage } from "@/lib/idb-persist-storage";
+import { publishLiveActivity } from "@/lib/live-activity-sync";
+import { EXPORT_APP_ID } from "@/lib/client-persistence";
 
 const defaultProfile: UserProfile = {
   name: "Prathyu",
@@ -110,6 +113,8 @@ interface ProgressStore {
   completeWeek: (weekId: number) => void;
   completeModuleWeek: (module: LearningModule, weekId: number) => void;
   setResumePosition: (position: ResumePosition) => void;
+  setScrollPosition: (key: string, scrollY: number) => void;
+  getScrollPosition: (key: string) => number;
 
   // Profile & misc
   setTodayGoal: (goal: string) => void;
@@ -204,12 +209,12 @@ export const useProgressStore = create<ProgressStore>()(
         return getModuleCurrentWeek(module, get().progress, max);
       },
 
-      isLocked: (weekId) => isModuleWeekLocked("roadmap", weekId, get().progress),
+      isLocked: (weekId) => isModuleWeekLocked("practice", weekId, get().progress),
 
       isModuleWeekLocked: (module, weekId) =>
         isModuleWeekLocked(module, weekId, get().progress),
 
-      isCompleted: (weekId) => isModuleWeekCompleted("roadmap", weekId, get().progress),
+      isCompleted: (weekId) => isModuleWeekCompleted("practice", weekId, get().progress),
 
       isModuleWeekCompleted: (module, weekId) =>
         isModuleWeekCompleted(module, weekId, get().progress),
@@ -319,28 +324,37 @@ export const useProgressStore = create<ProgressStore>()(
           },
         })),
 
-      completeWeek: (weekId) => get().completeModuleWeek("roadmap", weekId),
+      completeWeek: (weekId) => get().completeModuleWeek("practice", weekId),
 
-      completeModuleWeek: (module, weekId) =>
+      completeModuleWeek: (_module, _weekId) =>
         set((state) => {
-          const maxWeek =
-            module === "communication" ? COMMUNICATION_WEEKS.length : getTotalWeeks();
-          const moduleGates = applyModuleCompletionUnlock(
-            module,
-            weekId,
-            state.progress.moduleGates,
-            maxWeek
-          );
-          const progress = { ...state.progress, moduleGates, version: PROGRESS_VERSION };
+          const progress = syncModuleUnlocks(state.progress);
           const stats = computeGlobalStats(getCurriculumWeeks(), progress);
-          const currentWeek = getModuleCurrentWeek("roadmap", progress, getTotalWeeks());
+          const currentWeek = getModuleCurrentWeek("practice", progress, getTotalWeeks());
           return {
             progress,
             profile: syncDerivedProfile(state.profile, stats, currentWeek),
           };
         }),
 
-      setResumePosition: (position) => set({ resumePosition: position }),
+      setResumePosition: (position) =>
+        set((state) => {
+          publishLiveActivity({ ...position, learnerName: state.profile.name });
+          return { resumePosition: position };
+        }),
+
+      setScrollPosition: (key, scrollY) =>
+        set((state) => {
+          if (state.progress.scrollPositions[key] === scrollY) return state;
+          return {
+            progress: {
+              ...state.progress,
+              scrollPositions: { ...state.progress.scrollPositions, [key]: scrollY },
+            },
+          };
+        }),
+
+      getScrollPosition: (key) => get().progress.scrollPositions[key] ?? 0,
 
       setTodayGoal: (goal) => set({ todayGoal: goal }),
       toggleTodayGoal: () => set((s) => ({ todayGoalCompleted: !s.todayGoalCompleted })),
@@ -353,10 +367,25 @@ export const useProgressStore = create<ProgressStore>()(
             updates.todayGoalDate = today;
             updates.todayGoalCompleted = false;
           }
-          const progress = migrateProgressStateV3(state.progress, getCurriculumWeeks());
+          const weeks = getCurriculumWeeks();
+          const progress = syncModuleUnlocks(
+            migrateProgressStateV3(state.progress, weeks)
+          );
           updates.progress = progress;
-          const stats = computeGlobalStats(getCurriculumWeeks(), progress);
-          const currentWeek = getCurrentWeekId(getCurriculumWeeks(), progress);
+
+          const practiceWeek = getModuleCurrentWeek("practice", progress, getTotalWeeks());
+          const resume = state.resumePosition;
+          if (resume && resume.weekId < practiceWeek) {
+            updates.resumePosition = null;
+          } else if (resume) {
+            publishLiveActivity({
+              ...resume,
+              learnerName: state.profile.name,
+            });
+          }
+
+          const stats = computeGlobalStats(weeks, progress);
+          const currentWeek = getCurrentWeekId(weeks, progress);
           updates.profile = syncDerivedProfile(state.profile, stats, currentWeek);
           return { ...state, ...updates };
         });
@@ -465,7 +494,7 @@ export const useProgressStore = create<ProgressStore>()(
         const payload = {
           version: PROGRESS_VERSION,
           exportedAt: new Date().toISOString(),
-          app: "prathyu-academy" as const,
+          app: EXPORT_APP_ID,
           progress: state.progress,
           profile: state.profile,
           studySessions: state.studySessions,
@@ -475,20 +504,32 @@ export const useProgressStore = create<ProgressStore>()(
           todayGoalCompleted: state.todayGoalCompleted,
           resumePosition: state.resumePosition,
         };
-        downloadJson(
-          `prathyu-progress-${todayIso()}.json`,
-          JSON.stringify(payload, null, 2)
-        );
+        downloadJson(`supracodez-progress-${todayIso()}.json`, JSON.stringify(payload, null, 2));
       },
 
       importProgress: (json) => {
         const data = parseImportedProgress(json);
+        const weeks = getCurriculumWeeks();
+        const mergedProgress = migrateProgressStateV3(
+          {
+            ...defaultProgressState,
+            ...(data.progress as UserProgressState),
+            scrollPositions: {
+              ...defaultProgressState.scrollPositions,
+              ...((data.progress as UserProgressState)?.scrollPositions ?? {}),
+            },
+          },
+          weeks
+        );
+        const progress = syncModuleUnlocks(mergedProgress);
+
         set({
-          progress: migrateProgressStateV3(
-            { ...defaultProgressState, ...(data.progress as UserProgressState) },
-            getCurriculumWeeks()
+          progress,
+          profile: syncDerivedProfile(
+            { ...defaultProfile, ...(data.profile as UserProfile) },
+            computeGlobalStats(weeks, progress),
+            getCurrentWeekId(weeks, progress)
           ),
-          profile: { ...defaultProfile, ...(data.profile as UserProfile) },
           studySessions: (data.studySessions as StudySession[]) ?? [],
           notes: (data.notes as AppNote[]) ?? defaultNotes,
           todayGoal: data.todayGoal ?? "Complete today's learning plan items",
@@ -496,7 +537,14 @@ export const useProgressStore = create<ProgressStore>()(
           todayGoalCompleted: Boolean(data.todayGoalCompleted),
           resumePosition: (data.resumePosition as ResumePosition | null) ?? null,
         });
-        get().syncProfileFromProgress();
+
+        const resume = (data.resumePosition as ResumePosition | null) ?? null;
+        if (resume) {
+          publishLiveActivity({
+            ...resume,
+            learnerName: get().profile.name,
+          });
+        }
       },
 
       addStudySession: (hours) =>
@@ -552,10 +600,23 @@ export const useProgressStore = create<ProgressStore>()(
         const state = persisted as Record<string, unknown>;
         if (!state.todayGoalDate) state.todayGoalDate = todayIso();
         if (state.progress) {
-          state.progress = migrateProgressStateV3(
-            state.progress as UserProgressState,
-            getCurriculumWeeks()
-          );
+          const weeks = getCurriculumWeeks();
+          let progress = state.progress as UserProgressState;
+          if (!progress.scrollPositions) {
+            progress = { ...progress, scrollPositions: {} };
+          }
+          if (version >= 1 && version < 7) {
+            progress = markWeekCompleteAllModules(progress, 1, weeks);
+          }
+          if (version < PROGRESS_VERSION) {
+            progress = {
+              ...progress,
+              version: PROGRESS_VERSION,
+              moduleGates: rebuildModuleGatesFromProgress(weeks, progress),
+              scrollPositions: progress.scrollPositions ?? {},
+            };
+          }
+          state.progress = migrateProgressStateV3(progress, weeks);
         }
         if (version < PROGRESS_VERSION && !state.resumePosition) {
           state.resumePosition = null;

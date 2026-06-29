@@ -4,12 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getLearningWeek } from "@/learning-engine/loader";
 import type { LearnDifficulty, LearnLesson } from "@/learning-engine/types";
+import { lessonEntityId } from "@/learning-engine/types";
 import { groupByProblemType, lessonsByDifficulty } from "@/learning-engine/labels";
 import { ProblemDocument } from "./problem-document";
 import { HackerrankEditor } from "./hackerrank-editor";
 import { lessonHasWorkspace } from "./editor-workspace";
 import { cn } from "@/lib/utils";
 import { useTrackResumePosition } from "@/hooks/use-resume-position";
+import { usePersistScroll } from "@/hooks/use-persist-scroll";
 
 const SIDE_TABS = [
   { id: "problem" as const, label: "Problem" },
@@ -90,6 +92,12 @@ export function ChallengeSolveView({ weekId }: ChallengeSolveViewProps) {
     }
   }, [topicBundle, difficulty, problemType, lessonId, topicSlug, syncUrl]);
 
+  const scrollKey = useMemo(
+    () => (activeLesson ? `challenge-${weekId}-${topicSlug}-${activeLesson.id}` : ""),
+    [weekId, topicSlug, activeLesson]
+  );
+  const problemScrollRef = usePersistScroll(scrollKey, Boolean(activeLesson));
+
   const resumeHref = useMemo(() => {
     if (!topicSlug || !activeLesson) return "";
     const params = new URLSearchParams();
@@ -108,7 +116,19 @@ export function ChallengeSolveView({ weekId }: ChallengeSolveViewProps) {
       ? `${activeLesson.title} · ${difficulty.charAt(0).toUpperCase()}${difficulty.slice(1)}`
       : undefined,
     resumeHref,
-    Boolean(topicBundle && activeLesson)
+    Boolean(topicBundle && activeLesson),
+    activeLesson && topicBundle
+      ? {
+          topicSlug,
+          topicTitle: topicBundle.topic.title,
+          lessonId: activeLesson.id,
+          lessonTitle: activeLesson.title,
+          entityId: lessonEntityId({ weekId, topicSlug, id: activeLesson.id }),
+          difficulty,
+          problemType: activeLesson.problemType,
+          scrollKey,
+        }
+      : undefined
   );
 
   if (!week) {
@@ -149,7 +169,10 @@ export function ChallengeSolveView({ weekId }: ChallengeSolveViewProps) {
             ))}
           </nav>
 
-          <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain bg-[#1a1a1a]">
+          <div
+            ref={problemScrollRef}
+            className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain bg-[#1a1a1a]"
+          >
             <ProblemDocument lesson={activeLesson} tab={sideTab} />
           </div>
         </div>

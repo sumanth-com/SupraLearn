@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { RotateCcw, CheckCircle2 } from "lucide-react";
+import { RotateCcw, CheckCircle2, Download, Upload } from "lucide-react";
 import { useProgressStore } from "@/store/use-progress-store";
 import { useTotalWeeks } from "@/hooks/use-curriculum";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,9 @@ type PendingReset = { section: ResetSectionId; scope: ResetScope } | null;
 export function ProgressSettings() {
   const totalWeeks = useTotalWeeks();
   const resetSectionProgress = useProgressStore((s) => s.resetSectionProgress);
+  const exportProgress = useProgressStore((s) => s.exportProgress);
+  const importProgress = useProgressStore((s) => s.importProgress);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [sectionScopes, setSectionScopes] = useState<Record<ResetSectionId, ResetScope>>(() =>
     Object.fromEntries(RESET_SECTIONS.map((s) => [s.id, "all"])) as Record<
@@ -71,13 +74,64 @@ export function ProgressSettings() {
   }, [pending]);
 
   return (
-    <div className="space-y-3">
-      <div>
-        <h2 className="text-sm font-semibold text-zinc-200">Reset progress</h2>
+    <div className="space-y-6">
+      <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-4 sm:p-5">
+        <h2 className="text-sm font-semibold text-zinc-200">Backup &amp; restore</h2>
         <p className="mt-1 text-xs text-zinc-500">
-          Choose exactly what to clear — by section — without affecting the rest.
+          Export all progress to a JSON file or import on another browser. No account needed — everything stays client-side.
         </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-1.5 border-zinc-700"
+            onClick={() => exportProgress()}
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export progress
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-1.5 border-zinc-700"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Upload className="h-3.5 w-3.5" />
+            Import progress
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = () => {
+                try {
+                  importProgress(String(reader.result ?? ""));
+                  showSuccess("Progress imported successfully.");
+                } catch {
+                  showSuccess("Import failed — invalid backup file.");
+                }
+              };
+              reader.readAsText(file);
+              e.target.value = "";
+            }}
+          />
+        </div>
       </div>
+
+      <div className="space-y-3">
+        <div>
+          <h2 className="text-sm font-semibold text-zinc-200">Reset progress</h2>
+          <p className="mt-1 text-xs text-zinc-500">
+            Choose exactly what to clear — by section — without affecting the rest.
+          </p>
+        </div>
 
       {message && (
         <motion.div
@@ -140,6 +194,7 @@ export function ProgressSettings() {
           onCancel={() => setPending(null)}
         />
       )}
+    </div>
     </div>
   );
 }

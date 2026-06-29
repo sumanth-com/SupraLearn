@@ -11,21 +11,21 @@ export default function RoadmapPage() {
   const isLocked = useProgressStore((s) => s.isLocked);
   const isModuleWeekCompleted = useProgressStore((s) => s.isModuleWeekCompleted);
   const getModuleWeekProgress = useProgressStore((s) => s.getModuleWeekProgress);
-  const currentWeekId = useProgressStore((s) => s.getModuleCurrentWeek("roadmap"));
+  const currentWeekId = useProgressStore((s) => s.getModuleCurrentWeek("practice"));
 
-  const completedCount = weeks.filter((w) => isModuleWeekCompleted("roadmap", w.id)).length;
+  const completedCount = weeks.filter((w) => isModuleWeekCompleted("practice", w.id)).length;
 
   const overallPct = useMemo(() => {
     if (!weeks.length) return 0;
     const sum = weeks.reduce(
-      (acc, w) => acc + getModuleWeekProgress("roadmap", w.id).percentage,
+      (acc, w) => acc + getModuleWeekProgress("practice", w.id).percentage,
       0
     );
     return Math.round(sum / weeks.length);
   }, [weeks, getModuleWeekProgress, progress.completed]);
 
   const getRoadmapWeekProgress = (weekId: number) => ({
-    overall: getModuleWeekProgress("roadmap", weekId),
+    overall: getModuleWeekProgress("practice", weekId),
   });
 
   return (
@@ -33,7 +33,7 @@ export default function RoadmapPage() {
       weeks={weeks}
       currentWeekId={currentWeekId}
       isLocked={isLocked}
-      isCompleted={(weekId) => isModuleWeekCompleted("roadmap", weekId)}
+      isCompleted={(weekId) => isModuleWeekCompleted("practice", weekId)}
       getWeekProgress={getRoadmapWeekProgress}
       completedCount={completedCount}
       overallPct={overallPct}

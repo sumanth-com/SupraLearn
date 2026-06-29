@@ -32,8 +32,10 @@ import {
   getCommunicationWeekProgress,
 } from "@/curriculum/communication-skills";
 import { getLearningWeek } from "@/learning-engine/loader";
-import { lessonEntityId, type LearnLesson } from "@/learning-engine/types";
+import { ContinueLearningCard } from "@/components/shared/continue-learning-card";
 import { weekProgress } from "@/learning-engine/labels";
+import { buildContinueLearningTarget } from "@/lib/continue-learning";
+import { useStoreHydrated } from "@/hooks/use-store-hydrated";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn, getGreeting } from "@/lib/utils";
@@ -176,44 +178,6 @@ function getChartData(sessions: { date: string; hours: number }[], period: Chart
   }).reverse();
 }
 
-function findContinueLesson(weekId: number, isDone: (id: string) => boolean) {
-  const week = getLearningWeek(weekId);
-  if (!week) return null;
-
-  for (const bundle of week.topics) {
-    for (const lesson of bundle.lessons) {
-      const id = lessonEntityId({
-        weekId,
-        topicSlug: bundle.topic.slug,
-        id: lesson.id,
-      });
-      if (!isDone(id)) {
-        return {
-          weekId,
-          topicSlug: bundle.topic.slug,
-          topicTitle: bundle.topic.title,
-          lesson: lesson as LearnLesson & { topicSlug: string },
-        };
-      }
-    }
-  }
-  return null;
-}
-
-function learnUrl(
-  weekId: number,
-  topicSlug: string,
-  lesson: Pick<LearnLesson, "id" | "difficulty" | "problemType">
-) {
-  const params = new URLSearchParams({
-    topic: topicSlug,
-    lesson: lesson.id,
-    difficulty: lesson.difficulty,
-  });
-  if (lesson.problemType) params.set("type", lesson.problemType);
-  return `/roadmap/week/${weekId}/learn?${params.toString()}`;
-}
-
 interface MetricCardProps {
   title: string;
   value: string;
@@ -245,35 +209,26 @@ function WelcomeBanner({
   name,
   greeting,
   weekId,
-  weekTitle,
-  weekDescription,
   progressPct,
   completed,
   total,
   resumeHref,
-  resumeTitle,
-  resumeSubtitle,
+  bannerLine,
+  mounted,
 }: {
   name: string;
   greeting: string;
   weekId: number;
-  weekTitle: string;
-  weekDescription?: string;
   progressPct: number;
   completed: number;
   total: number;
   resumeHref?: string;
-  resumeTitle?: string;
-  resumeSubtitle?: string;
+  bannerLine: string;
+  mounted: boolean;
 }) {
-  const [now, setNow] = useState(() => new Date());
-
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(new Date()), 60_000);
-    return () => window.clearInterval(id);
-  }, []);
-
-  const dayLine = now.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+  const dayLine = mounted
+    ? new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })
+    : "\u00a0";
 
   return (
     <motion.div
@@ -304,9 +259,7 @@ function WelcomeBanner({
             </span>
           </h1>
           <p className="mt-1 max-w-2xl text-xs leading-relaxed text-zinc-400 sm:text-sm">
-            {resumeTitle
-              ? `Continue Learning · ${resumeTitle}${resumeSubtitle ? ` · ${resumeSubtitle}` : ""}`
-              : `${weekTitle} · ${weekDescription ?? "Your Java Backend Developer journey"}`}
+            {bannerLine}
           </p>
           <div className="mt-3 flex max-w-md items-center gap-2.5">
             <Progress value={progressPct} className="h-1.5 flex-1 bg-zinc-800/80" />
@@ -339,9 +292,11 @@ export function HomeDashboard() {
   const toggleTodayGoal = useProgressStore((s) => s.toggleTodayGoal);
   const getStats = useProgressStore((s) => s.getStats);
   const getWeekProgress = useProgressStore((s) => s.getWeekProgress);
+  const getModuleWeekProgress = useProgressStore((s) => s.getModuleWeekProgress);
 
   const [chartPeriod, setChartPeriod] = useState<ChartPeriod>("this-week");
   const [chartsReady, setChartsReady] = useState(false);
+  const hydrated = useStoreHydrated();
 
   useEffect(() => {
     setChartsReady(true);
@@ -350,7 +305,9 @@ export function HomeDashboard() {
   const weeks = useCurriculum();
   const practiceWeekId = useProgressStore((s) => s.getModuleCurrentWeek("practice"));
   const stats = getStats();
-  const overallWeekPct = stats.overallProgress;
+  const overallWeekPct = hydrated ? stats.overallProgress : 0;
+  const activeWeekId = hydrated ? practiceWeekId : 1;
+  const weekMeta = WEEK_ROADMAP_CURRICULUM.find((w) => w.weekId === activeWeekId);
 
   const monthPrefix = useMemo(() => {
     const now = new Date();
@@ -378,17 +335,9 @@ export function HomeDashboard() {
   }, [chartPeriod, chartData.length]);
 
   const continueTarget = useMemo(
-    () => findContinueLesson(practiceWeekId, isDone),
-    [practiceWeekId, isDone, progress.completed]
+    () => buildContinueLearningTarget(activeWeekId, isDone, resumePosition, weekMeta?.title),
+    [activeWeekId, isDone, resumePosition, progress.completed, weekMeta?.title]
   );
-
-  const fallbackResumeHref = continueTarget
-    ? learnUrl(continueTarget.weekId, continueTarget.topicSlug, continueTarget.lesson)
-    : `/roadmap/week/${practiceWeekId}`;
-
-  const resumeHref = resumePosition?.href ?? fallbackResumeHref;
-  const resumeTitle = resumePosition?.title;
-  const resumeSubtitle = resumePosition?.subtitle;
 
   const skillData = useMemo(() => {
     const communicationProgress = getOverallCommunicationProgress(isDone);
@@ -400,12 +349,11 @@ export function HomeDashboard() {
     }));
   }, [weeks, getWeekProgress, isDone, progress.completed]);
 
-  const currentLearnWeek = getLearningWeek(practiceWeekId);
-  const currentChallengeProgress = currentLearnWeek
+  const currentLearnWeek = getLearningWeek(activeWeekId);
+  const currentChallengeProgress = hydrated && currentLearnWeek
     ? weekProgress(currentLearnWeek, isDone)
     : { completed: 0, total: 0, percent: 0 };
-
-  const weekMeta = WEEK_ROADMAP_CURRICULUM.find((w) => w.weekId === practiceWeekId);
+  const weekChallengePct = hydrated ? getModuleWeekProgress("practice", activeWeekId).percentage : 0;
 
   const chartTooltipStyle = {
     cursor: false as const,
@@ -434,19 +382,28 @@ export function HomeDashboard() {
 
   return (
     <div className="mx-auto flex h-[calc(100vh-2.5rem)] max-w-6xl flex-col gap-3 overflow-hidden">
-      <WelcomeBanner
-        name={profile.name}
-        greeting={getGreeting()}
-        weekId={practiceWeekId}
-        weekTitle={weekMeta?.title ?? `Week ${practiceWeekId}`}
-        weekDescription={weekMeta?.description}
-        progressPct={currentChallengeProgress.percent}
-        completed={currentChallengeProgress.completed}
-        total={currentChallengeProgress.total}
-        resumeHref={resumeHref}
-        resumeTitle={resumeTitle}
-        resumeSubtitle={resumeSubtitle}
-      />
+      {!hydrated ? (
+        <div className="relative shrink-0 overflow-hidden rounded-2xl border border-indigo-500/20 bg-zinc-900/50 p-5 animate-pulse">
+          <div className="h-4 w-32 rounded bg-zinc-800" />
+          <div className="mt-3 h-7 w-64 max-w-full rounded bg-zinc-800" />
+          <div className="mt-2 h-4 w-full max-w-md rounded bg-zinc-800/80" />
+          <div className="mt-4 h-1.5 max-w-md rounded bg-zinc-800" />
+        </div>
+      ) : (
+        <WelcomeBanner
+          name={profile.name}
+          greeting={getGreeting()}
+          weekId={activeWeekId}
+          progressPct={weekChallengePct}
+          completed={currentChallengeProgress.completed}
+          total={currentChallengeProgress.total}
+          resumeHref={continueTarget.href}
+          bannerLine={continueTarget.bannerLine}
+          mounted
+        />
+      )}
+
+      <ContinueLearningCard className="shrink-0" />
 
       {/* Stats */}
       <div className="grid shrink-0 grid-cols-2 gap-2 xl:grid-cols-4">
@@ -470,7 +427,7 @@ export function HomeDashboard() {
         <MetricCard
           title="Overall Progress"
           value={`${overallWeekPct}%`}
-          subtitle={`Active practice week ${practiceWeekId}`}
+          subtitle={`Active practice week ${activeWeekId}`}
           progress={overallWeekPct}
           icon={<TrendingUp className="h-4 w-4 text-indigo-400" />}
           accent="bg-indigo-500/10 ring-indigo-500/25 text-indigo-400"

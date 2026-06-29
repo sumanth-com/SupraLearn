@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { ProgressBootstrap, ModuleCompletionWatcher } from "@/components/shared/progress-bootstrap";
+import { WeekCompletionCelebration } from "@/components/shared/week-completion-celebration";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -60,6 +61,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ProgressBootstrap />
       <ModuleCompletionWatcher />
+      <WeekCompletionCelebration />
       {children}
     </QueryClientProvider>
   );

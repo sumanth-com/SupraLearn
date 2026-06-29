@@ -8,6 +8,7 @@ import type { LearnDifficulty, LearnLesson, LearnWeekBundle } from "@/learning-e
 import { lessonEntityId } from "@/learning-engine/types";
 import { DIFFICULTY_LABELS, problemTypeLabel, weekProgress } from "@/learning-engine/labels";
 import { categoryLabel } from "@/components/learning-engine/lesson-renderer";
+import { useTrackResumePosition } from "@/hooks/use-resume-position";
 import { useProgressStore } from "@/store/use-progress-store";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -194,6 +195,33 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
   };
 
   const pointsToNext = progress.total - progress.completed;
+
+  const activeTopicTitle =
+    activeTopic === "all"
+      ? "All topics"
+      : (week.topics.find((t) => t.topic.slug === activeTopic)?.topic.title ?? activeTopic);
+
+  const hubHref =
+    activeTopic === "all"
+      ? `/roadmap/week/${week.weekId}`
+      : `/roadmap/week/${week.weekId}?topic=${encodeURIComponent(activeTopic)}`;
+
+  useTrackResumePosition(
+    "practice",
+    week.weekId,
+    `Week ${week.weekId} · ${week.title}`,
+    activeTopicTitle,
+    hubHref,
+    true,
+    activeTopic !== "all"
+      ? {
+          topicSlug: activeTopic,
+          topicTitle: activeTopicTitle,
+        }
+      : {
+          topicTitle: week.title,
+        }
+  );
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 pb-10">

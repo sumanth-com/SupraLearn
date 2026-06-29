@@ -21,13 +21,15 @@ export interface UserProgressState {
   weekNotes: Record<number, string>;
   /** Per-module week unlock/completion (v3+) */
   moduleGates: ModuleWeekGates;
+  /** Saved scroll offsets keyed by page id (e.g. challenge problem pane) */
+  scrollPositions: Record<string, number>;
   /** @deprecated legacy global gates — kept for migration only */
   unlockedWeekIds: number[];
   /** @deprecated legacy global gates — kept for migration only */
   completedWeekIds: number[];
 }
 
-export const PROGRESS_VERSION = 3;
+export const PROGRESS_VERSION = 8;
 
 export const defaultProgressState: UserProgressState = {
   version: PROGRESS_VERSION,
@@ -39,6 +41,7 @@ export const defaultProgressState: UserProgressState = {
   githubRepoLinks: {},
   weekNotes: {},
   moduleGates: createDefaultModuleGates(),
+  scrollPositions: {},
   unlockedWeekIds: [1],
   completedWeekIds: [],
 };
