@@ -13,6 +13,7 @@ import { useProgressStore } from "@/store/use-progress-store";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { useStoreHydrated } from "@/hooks/use-store-hydrated";
 
 const PAGE_SIZE = 25;
 
@@ -87,11 +88,9 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
     [week.topics]
   );
 
-  const topicFromUrl = searchParams.get("topic");
-  const initialTopic =
-    topicFromUrl && validTopicSlugs.has(topicFromUrl) ? topicFromUrl : "all";
-
-  const [activeTopic, setActiveTopic] = useState(initialTopic);
+  const hydrated = useStoreHydrated();
+  // Hydration-safe: always start with "all" on the server; update on client.
+  const [activeTopic, setActiveTopic] = useState("all");
   const [page, setPage] = useState(0);
   const [showSolved, setShowSolved] = useState(true);
   const [showUnsolved, setShowUnsolved] = useState(true);
@@ -200,6 +199,8 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
     activeTopic === "all"
       ? "All topics"
       : (week.topics.find((t) => t.topic.slug === activeTopic)?.topic.title ?? activeTopic);
+
+  if (!hydrated) return null;
 
   const hubHref =
     activeTopic === "all"

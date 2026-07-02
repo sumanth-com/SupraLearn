@@ -16,6 +16,11 @@ import {
   buildWeek1FundamentalsProblem,
   isWeek1FundamentalsTopic,
 } from "../lib/week1-fundamentals-bank.mjs";
+import {
+  buildWeek2ControlFlowProblem,
+  isWeek2ControlFlowTopic,
+} from "../lib/week2-control-flow-bank.mjs";
+import { getUniversalVariant, maybeInjectBug } from "../lib/universal-variant-bank.mjs";
 import { getQuotasForTopic, estimatedMinutes } from "../lib/problem-type-spec.mjs";
 
 const DIFFICULTIES = ["easy", "medium", "hard"];
@@ -632,27 +637,33 @@ function buildMultithreadingCode(slug, className, difficulty, idx) {
   };
 }
 
-function buildProblemPayload(slug, topicTitle, category, difficulty, idx) {
+function buildProblemPayload(slug, topicTitle, category, difficulty, idx, problemType) {
   const className = clsName(slug, `${difficulty[0].toUpperCase()}${idx + 1}`);
   const prompt = `${titleCaseSlug(slug)} scenario ${idx + 1} (${difficulty})`;
   const complexity =
     difficulty === "easy" ? ["O(n)", "O(n)", "O(1)"] : ["O(n^2)", "O(n log n)", "O(n)"];
+  const variant = getUniversalVariant({ slug, topicTitle, category, difficulty, problemType, index: idx });
+  const codeRaw = variant.code(className);
+  const code = maybeInjectBug({ code: codeRaw, problemType, index: idx });
 
-  const generated =
-    category === "oop"
-      ? buildOopCode(slug, className, difficulty, idx)
-      : category === "collections"
-      ? buildCollectionsCode(slug, className, difficulty, idx)
-      : category === "java8"
-      ? buildJava8Code(slug, className, difficulty, idx)
-      : category === "multithreading"
-      ? buildMultithreadingCode(slug, className, difficulty, idx)
-      : buildJavaCode(slug, className, difficulty, idx);
+  const generated = {
+    constraints: [
+      `${topicTitle} concepts (unique variant) — compile & run.`,
+      "Program must compile and produce the expected output.",
+    ],
+    exampleInput: variant.input,
+    exampleOutput: variant.output,
+    expectedOutput: variant.output,
+    code,
+    explanation: variant.explanation,
+    dryRun: `Trace the program and confirm output: ${String(variant.output).split("\n")[0]}`,
+    visualization: `${topicTitle} → stdout`,
+  };
 
   const base = {
     title: `${prompt} Challenge`,
     description: `Solve a real coding exercise focused on ${topicTitle}.`,
-    problemStatement: `Implement the ${topicTitle} logic for challenge ${idx + 1} and print the expected result.`,
+    problemStatement: variant.statement,
     constraints: generated.constraints,
     exampleInput: generated.exampleInput,
     exampleOutput: generated.exampleOutput,
@@ -712,8 +723,11 @@ function buildTopicAwareProblem(slug, topicTitle, category, difficulty, problemT
   if (isWeek1FundamentalsTopic(slug)) {
     return buildWeek1FundamentalsProblem(slug, topicTitle, category, difficulty, problemType, index);
   }
+  if (isWeek2ControlFlowTopic(slug)) {
+    return buildWeek2ControlFlowProblem(slug, topicTitle, category, difficulty, problemType, index);
+  }
 
-  const payload = buildProblemPayload(slug, topicTitle, category, difficulty, index);
+  const payload = buildProblemPayload(slug, topicTitle, category, difficulty, index, problemType);
   const prefix = problemTypePrefix(problemType);
   const title =
     problemType === "logic"

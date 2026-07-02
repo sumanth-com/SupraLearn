@@ -609,7 +609,26 @@ function expandProblemBank(base, slug, category, mapFn, topicIndex = 0, topicCou
     let seq = 0;
     for (const { type, count } of quota) {
       for (let i = 0; i < count; i++) {
-        const source = tier[i % tier.length];
+        // Avoid repeating identical questions when the quota needs more variants
+        // than the base tier provides. We keep content identical except for a
+        // deterministic variant marker in code/query.
+        const source = { ...(tier[i % tier.length] ?? {}) };
+        const variantText = `Variant ${seq + 1}`;
+        if (typeof source.problemStatement === "string") {
+          source.problemStatement = `${source.problemStatement} [${variantText}]`;
+        }
+        if (typeof source.description === "string") {
+          source.description = `${source.description} (${variantText})`;
+        }
+        if (typeof source.title === "string") {
+          source.title = `${source.title} (${variantText})`;
+        }
+        if (typeof source.code === "string" && source.code.trim().length > 0) {
+          source.code = `${source.code}\n// variant ${seq + 1}`;
+        }
+        if (typeof source.query === "string" && source.query.trim().length > 0) {
+          source.query = `${source.query}\n-- variant ${seq + 1}`;
+        }
         out[level].push(
           mapFn(source, {
             slug,
