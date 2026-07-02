@@ -8,6 +8,7 @@ import { getLearningWeek } from "@/learning-engine/loader";
 import { LearningEngineView } from "@/components/learning-engine/learning-engine-view";
 import { ChallengeMarkCompleteButton } from "@/components/learning-engine/challenge-mark-complete";
 import { Button } from "@/components/ui/button";
+import { useStoreHydrated } from "@/hooks/use-store-hydrated";
 import { useProgressStore } from "@/store/use-progress-store";
 
 function BackToChallengesLink({ weekId }: { weekId: number }) {
@@ -26,6 +27,7 @@ function BackToChallengesLink({ weekId }: { weekId: number }) {
 }
 
 function WeekLearnContent({ weekId }: { weekId: number }) {
+  const hydrated = useStoreHydrated();
   const week = getLearningWeek(weekId);
   const isLocked = useProgressStore((s) => s.isModuleWeekLocked("practice", weekId));
 
@@ -38,6 +40,17 @@ function WeekLearnContent({ weekId }: { weekId: number }) {
             Back to Roadmap
           </Button>
         </Link>
+      </div>
+    );
+  }
+
+  if (!hydrated) {
+    return (
+      <div className="fixed inset-0 z-10 flex flex-col overflow-hidden bg-[#0d0d0d] lg:left-64">
+        <header className="flex h-11 shrink-0 items-center gap-3 border-b border-zinc-800 bg-[#0a0a0a] px-4">
+          <div className="h-8 w-32 animate-pulse rounded bg-zinc-800" />
+        </header>
+        <div className="flex flex-1 items-center justify-center text-sm text-zinc-500">Loading…</div>
       </div>
     );
   }

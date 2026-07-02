@@ -4,11 +4,14 @@ import { Suspense, use } from "react";
 import Link from "next/link";
 import { getLearningWeek } from "@/learning-engine/loader";
 import { WeekChallengeHub } from "@/components/learning-engine/week-challenge-hub";
+import { WeekChallengeHubSkeleton } from "@/components/learning-engine/week-challenge-hub-skeleton";
 import { LockedWeekMessage } from "@/components/shared/locked-week-message";
 import { Button } from "@/components/ui/button";
+import { useStoreHydrated } from "@/hooks/use-store-hydrated";
 import { useProgressStore } from "@/store/use-progress-store";
 
 function WeekHubContent({ weekId }: { weekId: number }) {
+  const hydrated = useStoreHydrated();
   const week = getLearningWeek(weekId);
   const isLocked = useProgressStore((s) => s.isModuleWeekLocked("practice", weekId));
 
@@ -23,6 +26,10 @@ function WeekHubContent({ weekId }: { weekId: number }) {
         </Link>
       </div>
     );
+  }
+
+  if (!hydrated) {
+    return <WeekChallengeHubSkeleton />;
   }
 
   if (isLocked) {

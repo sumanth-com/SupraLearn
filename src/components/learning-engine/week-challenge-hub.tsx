@@ -150,7 +150,7 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
     const filtered = allChallenges.filter((c) => {
       if (activeTopic !== "all" && c.topicSlug !== activeTopic) return false;
 
-      const done = isDoneFn(c.entityId);
+      const done = hydrated && isDoneFn(c.entityId);
       if (done && !showSolved) return false;
       if (!done && !showUnsolved) return false;
 
@@ -193,14 +193,10 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
     syncTopicUrl(slug);
   };
 
-  const pointsToNext = progress.total - progress.completed;
-
   const activeTopicTitle =
     activeTopic === "all"
       ? "All topics"
       : (week.topics.find((t) => t.topic.slug === activeTopic)?.topic.title ?? activeTopic);
-
-  if (!hydrated) return null;
 
   const hubHref =
     activeTopic === "all"
@@ -213,7 +209,7 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
     `Week ${week.weekId} · ${week.title}`,
     activeTopicTitle,
     hubHref,
-    true,
+    hydrated,
     activeTopic !== "all"
       ? {
           topicSlug: activeTopic,
@@ -223,6 +219,9 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
           topicTitle: week.title,
         }
   );
+
+  const displayProgress = hydrated ? progress : { completed: 0, total: progress.total, percent: 0 };
+  const displayPointsToNext = displayProgress.total - displayProgress.completed;
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 pb-10">
@@ -251,17 +250,21 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
           <h1 className="text-2xl font-bold tracking-tight text-zinc-50 sm:text-3xl">{week.title}</h1>
         </div>
         <div className="w-full shrink-0 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 lg:w-72">
-          <p className="text-xs text-zinc-400">
-            {pointsToNext > 0
-              ? `${pointsToNext} more challenge${pointsToNext === 1 ? "" : "s"} to complete this week!`
+          <p className="text-xs text-zinc-400" suppressHydrationWarning>
+            {displayPointsToNext > 0
+              ? `${displayPointsToNext} more challenge${displayPointsToNext === 1 ? "" : "s"} to complete this week!`
               : "Week complete — great job!"}
           </p>
           <div className="mt-2 flex items-center gap-2">
-            <Progress value={progress.percent} className="h-2 flex-1" />
-            <span className="text-sm font-semibold tabular-nums text-emerald-400">{progress.percent}%</span>
+            <Progress value={displayProgress.percent} className="h-2 flex-1" />
+            <span className="text-sm font-semibold tabular-nums text-emerald-400" suppressHydrationWarning>
+              {hydrated ? `${displayProgress.percent}%` : "\u00a0"}
+            </span>
           </div>
-          <p className="mt-2 text-[11px] tabular-nums text-zinc-500">
-            Progress: {progress.completed}/{progress.total} challenges
+          <p className="mt-2 text-[11px] tabular-nums text-zinc-500" suppressHydrationWarning>
+            {hydrated
+              ? `Progress: ${displayProgress.completed}/${displayProgress.total} challenges`
+              : "\u00a0"}
           </p>
         </div>
       </div>
@@ -307,7 +310,7 @@ export function WeekChallengeHub({ week }: { week: LearnWeekBundle }) {
           ) : (
             pageItems.map((item, i) => {
               const { lesson, topicSlug, topicTitle, entityId } = item;
-              const done = isDoneFn(entityId);
+              const done = hydrated && isDoneFn(entityId);
               const bookmarked = isBookmarkedFn(entityId);
               const isFirst = page === 0 && i === 0;
               const globalIndex = page * PAGE_SIZE + i + 1;

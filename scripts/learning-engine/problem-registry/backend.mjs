@@ -599,46 +599,80 @@ function ensureCount(problemsByDifficulty, slug) {
   }
 }
 
+const SCENARIO_CONTEXTS = [
+  "e-commerce orders API",
+  "hospital appointment system",
+  "library book lending",
+  "expense tracker app",
+  "inventory warehouse",
+  "student course portal",
+  "ride-sharing backend",
+  "food delivery platform",
+  "ticket booking service",
+  "fitness membership app",
+  "real-estate listings",
+  "banking transfer service",
+  "weather alert service",
+  "chat messaging API",
+  "blog publishing platform",
+];
+
+function differentiateProblem(problem, seq, slug, level) {
+  const context = SCENARIO_CONTEXTS[seq % SCENARIO_CONTEXTS.length];
+  const tag = `Scenario ${seq + 1}: ${context}`;
+  const copy = { ...problem };
+
+  if (typeof copy.title === "string") {
+    copy.title = `${copy.title} — ${tag}`;
+  }
+  if (typeof copy.description === "string") {
+    copy.description = `Apply this in a ${context} backend. ${copy.description}`;
+  }
+  if (typeof copy.problemStatement === "string") {
+    copy.problemStatement = `${TOPIC_TITLES[slug] ?? slug} (${level}) — ${tag}. ${copy.problemStatement}`;
+  }
+  if (typeof copy.command === "string") {
+    copy.command = `${copy.command}\n# ${tag}`;
+  }
+  if (typeof copy.goodPrompt === "string") {
+    copy.goodPrompt = `${copy.goodPrompt}\n\nDomain context: ${context}.`;
+  }
+  if (typeof copy.prompt === "string") {
+    copy.prompt = `${copy.prompt} (context: ${context})`;
+  }
+  if (typeof copy.code === "string" && copy.code.trim().length > 0) {
+    copy.code = `${copy.code}\n// ${tag}`;
+  }
+  if (typeof copy.query === "string" && copy.query.trim().length > 0) {
+    copy.query = `${copy.query}\n-- ${tag}`;
+  }
+  return copy;
+}
+
 /** Expand base tiers to per-week quota (20 easy + 20 medium + 20 hard per week) */
 function expandProblemBank(base, slug, category, mapFn, topicIndex = 0, topicCount = 1) {
   const quotas = getQuotasForTopic(slug, category, topicIndex, topicCount);
   const out = { easy: [], medium: [], hard: [] };
+  let globalSeq = 0;
+
   for (const level of LEVELS) {
     const tier = base[level] ?? [];
     const quota = quotas[level] ?? [];
-    let seq = 0;
     for (const { type, count } of quota) {
       for (let i = 0; i < count; i++) {
-        // Avoid repeating identical questions when the quota needs more variants
-        // than the base tier provides. We keep content identical except for a
-        // deterministic variant marker in code/query.
-        const source = { ...(tier[i % tier.length] ?? {}) };
-        const variantText = `Variant ${seq + 1}`;
-        if (typeof source.problemStatement === "string") {
-          source.problemStatement = `${source.problemStatement} [${variantText}]`;
-        }
-        if (typeof source.description === "string") {
-          source.description = `${source.description} (${variantText})`;
-        }
-        if (typeof source.title === "string") {
-          source.title = `${source.title} (${variantText})`;
-        }
-        if (typeof source.code === "string" && source.code.trim().length > 0) {
-          source.code = `${source.code}\n// variant ${seq + 1}`;
-        }
-        if (typeof source.query === "string" && source.query.trim().length > 0) {
-          source.query = `${source.query}\n-- variant ${seq + 1}`;
-        }
+        const pick = tier.length > 0 ? tier[globalSeq % tier.length] : {};
+        const source = differentiateProblem({ ...pick }, globalSeq, slug, level);
         out[level].push(
           mapFn(source, {
             slug,
             level,
             type,
             index: i,
-            seq: seq++,
+            seq: globalSeq,
             category,
           })
         );
+        globalSeq++;
       }
     }
     if (out[level].length === 0) out[level] = tier;
