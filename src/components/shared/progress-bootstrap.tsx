@@ -12,10 +12,16 @@ import { syncCelebratedWeeks } from "@/lib/week-celebration-storage";
 /** Runs once on app load: restore profile, daily goal, streak, and sync week gates. */
 export function ProgressBootstrap() {
   const bootstrap = useProgressStore((s) => s.bootstrapSession);
+  const hydrated = useStoreHydrated();
 
   useEffect(() => {
     bootstrap();
   }, [bootstrap]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    bootstrap();
+  }, [hydrated, bootstrap]);
 
   return null;
 }

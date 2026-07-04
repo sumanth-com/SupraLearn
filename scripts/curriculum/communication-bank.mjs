@@ -5,459 +5,459 @@ function d(answer, realWorld) {
 }
 
 export const COMMUNICATION_BANK = {
-  // Week 1
+  // Week 1 — Communication Foundations
   "comm-w1-topic-1": d(
-    "• **Breath** — belly, not chest\n• **Pace** — slow down when nervous\n• **Volume** — clear, don't shout\n• **Articulation** — finish each word",
-    "Sprint review: slower speech → zero repeat questions."
+    "• Sender — you\n• Message — words + tone\n• Listener — who hears you\n• Good comm = clear message + active listening",
+    "Stand-up: say what you did, what you will do, blockers — one clear message."
   ),
   "comm-w1-topic-2": d(
-    "• Aim to be **understood**, not accent-free\n• Fix: v/w, th, ending sounds\n• Practice: repository, asynchronous, deployed",
-    "'Wersion control' → say 'version control' in interviews."
+    "• Fear is normal — everyone feels it\n• Start small: 1 sentence, then 2\n• Practice alone first, then with a friend\n• Mistakes help you learn",
+    "Record yourself 30s daily — fear drops after a week."
   ),
   "comm-w1-topic-3": d(
-    "• Stress **main words**, not every syllable\n• REcord (noun) vs reCORD (verb)\n• Example: We **deployed** the **API** **today**",
-    "Wrong stress → people misunderstand in calls."
+    "• Hello / Hi — casual\n• Good morning — formal\n• Nice to meet you — first time\n• My name is… I am a… — intro",
+    "First day: 'Hi, I'm Priya. I'm joining the backend team.'"
   ),
   "comm-w1-topic-4": d(
-    "• Don't mumble — open mouth slightly\n• Finish t, d, k at word ends\n• Read 1 doc paragraph aloud daily",
-    "Clear 'done' vs 'dun' — fewer 'what?' in stand-up."
+    "• Subject + Verb + Object\n• I write code.\n• She tests the API.\n• Keep sentences short",
+    "'I fixed the bug' beats 'Bug fixing was done by me.'"
   ),
   "comm-w1-topic-5": d(
-    "• Pick 1 work topic\n• Speak 2 min, no fillers\n• Record → replay → fix",
-    "Do daily before stand-up for 2 weeks."
+    "• Listen without planning your reply\n• Nod, eye contact, short replies (I see, Got it)\n• 5 min English audio daily builds habit",
+    "In meetings: listen first, then ask one clear question."
   ),
   "comm-w1-ex-1": d(
-    "Record 60s: name, role, task, goal.",
-    "Reuse for stand-up & interviews."
+    "Record 60s: name, role, one hobby, one goal.",
+    "Reuse for college intro and interviews."
   ),
   "comm-w1-ex-2": d(
-    "Read README aloud at half speed. 3 min.",
-    "Trains slow, clear speaking."
+    "Say 5 pairs aloud: Hello–Hi / Good morning–Good evening / Nice to meet you–Pleased to meet you.",
+    "Muscle memory for real greetings."
   ),
   "comm-w1-ex-3": d(
-    "Mark stress on 10 email sentences. Read aloud.",
-    "Stops monotone delivery."
+    "Write 5 simple sentences about today. Read each aloud twice.",
+    "I woke up. I had breakfast. I opened my laptop."
   ),
   "comm-w1-ex-4": d(
-    "90s stand-up: yesterday / today / blockers. No um, like, basically.",
-    "Most common dev speaking format — practice it."
+    "Listen 5 min English (podcast/video). Note 3 words you heard.",
+    "Daily habit beats one long session."
   ),
 
-  // Week 2
+  // Week 2 — English Grammar for Speaking
   "comm-w2-topic-1": d(
-    "• **Formal** — clients, managers, unknown emails\n• **Informal** — close teammates on Slack\n• Match the channel",
-    "Slack: 'Review PR #42?' Email: 'Could you review when convenient?'"
+    "• Noun — person, place, thing (developer, server)\n• Verb — action (deploy, test)\n• Adjective — describes (fast, broken)",
+    "'The fast API returns errors' — noun + adjective + noun + verb."
   ),
   "comm-w2-topic-2": d(
-    "Use: **propose, confirm, escalate, align, deliver, block**\nAvoid: try, maybe, kind of, stuff",
-    "'I will deliver the API Thursday' > 'I will try to do the API.'"
+    "• English: Subject + Verb + Object\n• I deploy code. (not: Code I deploy)\n• One idea per sentence when speaking",
+    "Stand-up: 'I finished login. I will start payments.'"
   ),
   "comm-w2-topic-3": d(
-    "• Soft start: 'Could we…', 'I suggest…'\n• Still state your point clearly",
-    "'Could we move feature B to next sprint?' — polite pushback."
+    "• Past — I deployed yesterday\n• Present — I am testing now\n• Future — I will deploy tomorrow",
+    "Status: past work → current task → next step."
   ),
   "comm-w2-topic-4": d(
-    "Cut: basically, actually, like, you know\n**Pause** instead — sounds confident",
-    "Count fillers in a 2-min recording. Aim under 3."
+    "• a/an — one thing (a bug, an error)\n• the — specific thing (the main branch)\n• I, you, we, they — don't drop pronouns",
+    "'I will check the logs' — not 'Will check logs.'"
   ),
   "comm-w2-topic-5": d(
-    "• Add 20 work words/week to a list\n• Use each in 1 real message",
-    "deploy, rollback, mitigate, stakeholder — keep a word bank."
+    "• Wrong tense: 'I deploy yesterday'\n• Missing 's': 'He work on it'\n• Double negative: 'I don't know nothing'",
+    "Record 1 min — catch your top 2 mistakes."
   ),
   "comm-w2-ex-1": d(
-    "Rewrite 5 casual Slack msgs — professional, short.",
-    "'hey check this' → 'Could you review this PR? Thanks.'"
+    "Fix 5 spoken errors (write correct + say aloud).",
+    "He works. I deployed. I don't know anything."
   ),
   "comm-w2-ex-2": d(
-    "Status email: replace do/make/get/fix with strong verbs.",
-    "'Working on bug' → 'Investigating login timeout.'"
+    "Tell a 1-min story: yesterday / today / tomorrow — correct tenses.",
+    "Interview favorite: 'What did you do last week?'"
   ),
   "comm-w2-ex-3": d(
-    "Record 2-min update. Count fillers. Re-record.",
-    "Interviewers notice filler words."
+    "10 sentences with a, an, the — read aloud.",
+    "I found a bug in the login module."
   ),
   "comm-w2-ex-4": d(
-    "List 10 project terms. 1 sentence each.",
-    "Shows real project experience in interviews."
+    "Record 1 min free talk. Replay. Fix 3 grammar slips. Re-record.",
+    "Self-correction builds speaking accuracy."
   ),
 
-  // Week 3
+  // Week 3 — Vocabulary & Pronunciation
   "comm-w3-topic-1": d(
-    "Status update tenses:\n• **Past** — finished\n• **Present** — now\n• **Future** — next",
-    "'Merged auth. API in QA. Deploy Friday.'"
+    "• Learn 10 words/week: schedule, deadline, update, confirm\n• Use each in one real sentence",
+    "Daily: 'Can we confirm the meeting time?'"
   ),
   "comm-w3-topic-2": d(
-    "• **a/an** — one of many\n• **the** — specific thing\n• 'an issue' not 'a issue'",
-    "Small grammar errors add up in client emails."
+    "• Stakeholder, deploy, milestone, escalate, align\n• Say them clearly in stand-up",
+    "'We need to align with QA before deploy.'"
   ),
   "comm-w3-topic-3": d(
-    "• **by** Friday = deadline\n• **until** Friday = before end\n• **within** 3 days = inside window",
-    "'By EOD' = before today ends. Don't mix up by/until."
+    "• Sound out syllables: de-PLOY, a-SYNC, da-TA-base\n• Copy native speaker audio for hard words",
+    "repository, architecture, authentication — practice daily."
   ),
   "comm-w3-topic-4": d(
-    "• Subject + verb must match\n• 'Tests **pass**' not 'passes'\n• 'Each service **has**' — singular",
-    "Pick US or UK style for 'data is/are' — stay consistent."
+    "• Stress the right syllable: com-MU-ni-cate\n• Rise tone on questions; fall on statements",
+    "Wrong stress → people misunderstand on calls."
   ),
   "comm-w3-topic-5": d(
-    "Before send:\n1. One idea per line\n2. Correct tense\n3. Clear ask\n4. Read aloud once",
-    "10-second read catches typos before CEO sees it."
+    "• Cut: um, uh, like, basically, actually\n• Pause instead — sounds confident\n• Fix: develop (not devalop), specific (not pacific)",
+    "Count fillers in 2 min. Aim under 3."
   ),
   "comm-w3-ex-1": d(
-    "Fix 10 grammar errors in old emails.",
-    "Your sent folder = free practice."
+    "Pick 10 new words. Write + speak 1 sentence each.",
+    "deadline, feedback, requirement, merge, review…"
   ),
   "comm-w3-ex-2": d(
-    "Write 5-line status: past + present + future.",
-    "Copy same format every week for manager."
+    "List 15 work words you use weekly. Read list aloud.",
+    "Your personal glossary for interviews."
   ),
   "comm-w3-ex-3": d(
-    "Fix prepositions: on Monday, in prod, by deadline, responsible for.",
-    "'Deploy to production' not 'on production.'"
+    "Record 10 hard words. Compare with dictionary audio.",
+    "Focus on endings: -ed, -tion, -ment."
   ),
   "comm-w3-ex-4": d(
-    "Checklist on last email. Fix 1 repeat mistake.",
-    "Everyone has 2–3 patterns — find yours."
+    "2-min talk on any topic. Zero fillers. Pause if stuck.",
+    "Fluency + clarity beat perfect grammar."
   ),
 
-  // Week 4
+  // Week 4 — Daily Communication Skills
   "comm-w4-topic-1": d(
-    "Email:\n• Subject — specific\n• Line 1 — why you're writing\n• Body — bullets if 3+ points\n• Close — ask + thanks",
-    "Subject: 'PR #88 ready — UserService refactor'"
+    "• Home: polite requests — 'Could you help me?'\n• College: group work — 'When is our deadline?'",
+    "Practice with family or roommate in English 5 min."
   ),
   "comm-w4-topic-2": d(
-    "• Direct + respectful\n• Facts, not blame\n• 'Build failed step 3' not 'You broke it'",
-    "Incident: 'Latency spike at 14:00 UTC. Investigating.'"
+    "• 'How's your week going?'\n• 'Working on anything interesting?'\n• Short answers + one question back",
+    "Coffee chat before sprint planning."
   ),
   "comm-w4-topic-3": d(
-    "• **Request** — what, why, when\n• **Decline** — thanks + reason + alt\n• **Follow-up** — date + restate ask",
-    "'Following up on Tuesday's API access note — confirm by Wed EOD?'"
+    "• Shop: 'How much is this?' 'Do you have size M?'\n• Travel: 'Where is the gate?' 'One ticket, please'",
+    "Role-play before a real trip or mall visit."
   ),
   "comm-w4-topic-4": d(
-    "Slack:\n• 1 topic per msg\n• Use threads\n• @ only when needed\n• please + thanks",
-    "'Gentle ping on PR #42' > '???'"
+    "• Start: Could you / May I / What is…\n• One question at a time\n• Wait for full answer",
+    "'What is the expected response time for this API?'"
   ),
   "comm-w4-topic-5": d(
-    "Sorry once → what went wrong → what you'll do",
-    "'Missed window. Rollback deploy at 10:00. Sorry for disruption.'"
+    "• I think… / In my view… / I prefer…\n• Give one reason\n• Stay respectful if others disagree",
+    "'I think we should test first because it reduces risk.'"
   ),
   "comm-w4-ex-1": d(
-    "Email: ask senior for PR review. Link + urgency.",
-    "Clear ask = faster review."
+    "Role-play: ask a classmate about assignment deadline.",
+    "2 min — question, answer, follow-up."
   ),
   "comm-w4-ex-2": d(
-    "Polite no to extra work. Offer next sprint.",
-    "Protect your committed sprint."
+    "Practice 5 openers aloud. Use one in a real chat today.",
+    "How's the project going? Need any help?"
   ),
   "comm-w4-ex-3": d(
-    "Follow-up email — neutral tone, no guilt.",
-    "OK to follow up 2–3× on blockers."
+    "Shopping dialogue: price, size, return policy — 2 min.",
+    "Builds confidence for real stores."
   ),
   "comm-w4-ex-4": d(
-    "Rewrite blunt Slack to kind + actionable.",
-    "'Wrong, redo' → 'Consider null-check — NPE risk here.'"
+    "60s opinion: remote work / online classes / your hobby.",
+    "Structure: opinion + one reason + example."
   ),
 
-  // Week 5
+  // Week 5 — Speaking Fluency Development
   "comm-w5-topic-1": d(
-    "**PREP**\n• **P**oint\n• **R**eason\n• **E**xample\n• **P**oint again",
-    "'Ship at risk → 3 QA blockers → Safari login fails → need 2 days.'"
+    "• Name things in English as you see them\n• Plan your day in English in your head\n• Stop translating word-by-word",
+    "Think 'I need coffee' not 'I need coffee' via mother tongue."
   ),
   "comm-w5-topic-2": d(
-    "First 15 sec: who (if needed) + topic + why it matters",
-    "'Sprint update — on track for Thursday release.'"
+    "• Short phrases are OK: 'Still working on it'\n• Keep talking — don't freeze for perfect words\n• Use simple words when stuck",
+    "Stand-up: better to speak simply than stay silent."
   ),
   "comm-w5-topic-3": d(
-    "Use: First… Next… Finally… In summary…",
-    "Helps people follow long explanations."
+    "• Start — set the scene\n• Middle — what happened\n• End — result or lesson",
+    "'Last sprint we had a bug… we fixed it… now tests pass.'"
   ),
   "comm-w5-topic-4": d(
-    "Hard Q: pause → repeat Q → answer → admit gaps",
-    "'Don't have that number — I'll follow up EOD.'"
+    "• Read aloud 5 min daily\n• Shadow a short podcast clip\n• Describe your screen for 1 min",
+    "Fluency = repetition + speed drills."
   ),
   "comm-w5-topic-5": d(
-    "End with clear next step or decision needed",
-    "'Pick A or B by Friday' — not 'so yeah…'"
+    "• Power pose 30s before speaking\n• Smile — relaxes voice\n• Breathe out before first word",
+    "Before demo: 3 deep breaths, then start."
   ),
   "comm-w5-ex-1": d(
-    "2-min stand-up on blocker using PREP.",
-    "Reason + example → faster help."
+    "2-min story: a challenge you solved. No notes.",
+    "Interview STAR stories start here."
   ),
   "comm-w5-ex-2": d(
-    "Write 3 opening lines: stand-up, review, 1:1.",
-    "Same update, different meeting hook."
+    "Describe your morning in English only — 2 min timer.",
+    "Forces thinking in English."
   ),
   "comm-w5-ex-3": d(
-    "Voice-only 5-point summary. Under 3 min.",
-    "Good for phone screens & client calls."
+    "Pick a photo. Describe it for 90 seconds.",
+    "Trains quick vocabulary access."
   ),
   "comm-w5-ex-4": d(
-    "Answer aloud: what you built, hardest bug, stack, trade-off, lesson.",
-    "Top 5 interview questions — rehearse short."
+    "Speak non-stop 3 min on any topic. No long pauses.",
+    "If stuck, say 'Another point is…' and continue."
   ),
 
-  // Week 6
+  // Week 6 — Listening & Comprehension Skills
   "comm-w6-topic-1": d(
-    "**Listen → reflect → respond**\nDon't plan reply while they talk.",
-    "Repeat requirement back → catch wrong assumption early."
+    "• Put phone away\n• Don't interrupt\n• Show you listen: 'So you mean…'",
+    "Client call: repeat requirement before you build."
   ),
   "comm-w6-topic-2": d(
-    "Paraphrase: 'So you need 404 when user deleted, not 403 — right?'",
-    "Saves weeks of wrong code."
+    "• US, UK, Indian English — all valid\n• Focus on meaning, not accent\n• Replay hard parts at 0.75x speed",
+    "YouTube tech talks — expose yourself weekly."
   ),
   "comm-w6-topic-3": d(
-    "Ask: success criteria? edge cases? who uses it?\nWait till they finish.",
-    "5 good questions > 50 bug fixes later."
+    "• Note keywords, not full sentences\n• Who / what / when / decision",
+    "Meeting notes: 'John — deploy Friday — need QA sign-off.'"
   ),
   "comm-w6-topic-4": d(
-    "Video: camera on, nod, notes, no visible multitask",
-    "Notes on call = you capture commitments."
+    "• 3 sentences max: main idea + key detail + next step\n• Use your words, not copy",
+    "After stand-up: tell a friend what team decided."
   ),
   "comm-w6-topic-5": d(
-    "1:1: ask 'Advice or just vent?'\nDon't jump to fix every time.",
-    "Sometimes people need heard first."
+    "• 1 podcast or video episode/week\n• Pause and predict what comes next\n• Write 5 new words from it",
+    "Lex Fridman clips, freeCodeCamp — pick your level."
   ),
   "comm-w6-ex-1": d(
-    "10-min mock 1:1. Paraphrase before you reply.",
-    "Better at receiving feedback too."
+    "Watch 5-min English video. Summarize in 3 sentences aloud.",
+    "Tests comprehension + speaking together."
   ),
   "comm-w6-ex-2": d(
-    "5 questions for vague ticket: 'Improve performance.'",
-    "Clarify before you code."
+    "Listen to 2 different accents. Write 5 new words each.",
+    "Builds ear for global teams."
   ),
   "comm-w6-ex-3": d(
-    "Summarize 5-min tech video in 3 sentences.",
-    "Same skill as meeting notes."
+    "Play a 3-min talk. Take notes. Recap in 60s.",
+    "Same skill as sprint review listening."
   ),
   "comm-w6-ex-4": d(
-    "3 listening mistakes + 1 fix each.",
-    "Interrupting, assuming, phone — pick yours."
+    "Partner says something. You paraphrase before replying.",
+    "'So you're saying the API is slow in production?'"
   ),
 
-  // Week 7
+  // Week 7 — Public Speaking Fundamentals
   "comm-w7-topic-1": d(
-    "Open: Hi, [Name], [Team], calling about [topic]\nClose: recap + thanks + next steps",
-    "Name + purpose in 10 sec = professional."
+    "• Stand/sit tall — shoulders back\n• Open posture — no crossed arms\n• Hands visible — natural gestures",
+    "Video call: camera at eye level looks professional."
   ),
   "comm-w7-topic-2": d(
-    "Headset, mute when silent, test mic first",
-    "Unmuted keyboard noise kills calls."
+    "• Look at camera or people — not only slides\n• 2–3 seconds per person in a group\n• Glance at notes, return to audience",
+    "Eye contact builds trust in demos."
   ),
   "comm-w7-topic-3": d(
-    "Screen share: say what you click\n'Opening logs… filtering errors… here's stack trace'",
-    "Narration helps everyone follow."
+    "• Pace — slow for important points\n• Pitch — vary tone (monotone = boring)\n• Volume — loud enough for back row",
+    "Pause before key line: 'The result was… zero downtime.'"
   ),
   "comm-w7-topic-4": d(
-    "Dropped? Rejoin → 'Last point you heard?' → continue",
-    "Don't restart from slide 1."
+    "• Nerves = normal energy\n• Prepare opening line by heart\n• Small audience first — room, mirror, friend",
+    "First 15 seconds memorized = calm rest of talk."
   ),
   "comm-w7-topic-5": d(
-    "Always put **timezone** in invites\n'3 PM IST / 9:30 AM GMT'",
-    "'3 PM' alone causes missed meetings."
+    "• Open — hook + topic\n• Body — 2–3 points\n• Close — summary + thank you",
+    "Today I'll cover X, Y, Z. In summary… Thanks."
   ),
   "comm-w7-ex-1": d(
-    "Script 30s client call opening. Rehearse.",
-    "First impression matters."
+    "2-min speech: open, 2 points, close. Record it.",
+    "College presentation or team demo format."
   ),
   "comm-w7-ex-2": d(
-    "Narrate 3-min IDE debug screen share.",
-    "Demo + on-call skill combined."
+    "Read one paragraph: loud, soft, slow, fast — 1 min each.",
+    "Trains voice control."
   ),
   "comm-w7-ex-3": d(
-    "Practice: 'Deploy Friday — prod or staging?'",
-    "Clarify without blame."
+    "Record 1-min talk. Watch — did you look at camera?",
+    "Fix before next Zoom presentation."
   ),
   "comm-w7-ex-4": d(
-    "Email: 2 time slots, IST + US Eastern.",
-    "Options = one reply, not 4 emails."
+    "Checklist before speaking: posture, breath, smile, opening line.",
+    "Print and use before every presentation."
   ),
 
-  // Week 8
+  // Week 8 — Professional Communication
   "comm-w8-topic-1": d(
-    "Soften with: could, would, might, suggest",
-    "'We might refactor auth first' > 'We must rewrite everything.'"
+    "• Subject — specific (PR review needed — auth module)\n• Opening — purpose in line 1\n• Close — Thanks / Best regards",
+    "Bad: 'Hi' / Good: 'Could you review PR #42 by EOD?'"
   ),
   "comm-w8-topic-2": d(
-    "**Problem → Options → Recommendation**",
-    "'Slow API. Cache or index. I pick index — lower risk.'"
+    "• Be polite + direct\n• Use names\n• Don't overshare personal life at work",
+    "'Hi Sam, do you have 5 minutes about the API?'"
   ),
   "comm-w8-topic-3": d(
-    "Agree part first, then disagree\n'I agree deadline is tight. We still need 2 QA days.'",
-    "Sounds collaborative, not combative."
+    "• Join on time, mute when not speaking\n• One topic at a time\n• End with: 'So next steps are…'",
+    "Stand-up: yesterday / today / blockers — under 2 min."
   ),
   "comm-w8-topic-4": d(
-    "No to scope = offer trade\n'A+B this sprint. C moves to backlog?'",
-    "PMs respect options, not flat no."
+    "• 'Could you clarify…'\n• 'What is the priority for…'\n• 'Who is the owner of…'",
+    "Better questions = fewer wrong builds."
   ),
   "comm-w8-topic-5": d(
-    "Summarize agreement → open issue → propose vote/spike",
-    "'All agree security first. OAuth provider — spike this week?'"
+    "• We, not only I — teamwork\n• deadline, stakeholder, deliverable, sync, blocker\n• Thank people by name",
+    "'Thanks, Anya, for the quick review.'"
   ),
   "comm-w8-ex-1": d(
-    "Rewrite 'bad idea' → polite + reason.",
-    "'Concern is ops cost — compared managed vs self-hosted?'"
+    "Write 1 request email: clear subject, polite ask, deadline.",
+    "Template for manager and client emails."
   ),
   "comm-w8-ex-2": d(
-    "Deadline slip: 3 options — cut scope, add help, shift date.",
-    "Managers decide faster with options."
+    "30s meeting intro: name, role, why you're here.",
+    "First day on client call."
   ),
   "comm-w8-ex-3": d(
-    "Agree 1 line → counter in 2 lines.",
-    "Use for 'tell me about disagreement' interview Q."
+    "Speak 5 professional questions aloud — natural tone.",
+    "Could we schedule a sync to align on scope?"
   ),
   "comm-w8-ex-4": d(
-    "Slack: decline scope + offer alternative.",
-    "'Can't do mobile — I'll doc APIs for next sprint.'"
+    "90s team update: done, doing, blocked — record or say live.",
+    "Daily stand-up practice."
   ),
 
-  // Week 9
+  // Week 9 — Personality Development & Soft Skills
   "comm-w9-topic-1": d(
-    "**DESC**\n• **D**escribe facts\n• **E**xpress impact\n• **S**pecify change\n• **C**onsequence",
-    "'Builds failed (D). Blocked QA (E). Run tests before merge (S). Team unblocked (C).'"
+    "• Prepare — confidence comes from practice\n• Celebrate small wins (spoke 1 min!)\n• Posture + clear voice = look confident",
+    "Even if nervous inside, clear speech reads as confident."
   ),
   "comm-w9-topic-2": d(
-    "Criticism: listen → ask example → thank → pick 1 fix",
-    "'Which PR?' turns vague feedback into action."
+    "• Know your emotions before you speak\n• Stay calm when others are upset\n• Respond, don't react",
+    "Angry Slack reply? Wait 10 min, then write."
   ),
   "comm-w9-topic-3": d(
-    "Feedback = situation + behavior + impact + suggestion",
-    "'Interrupted client twice — they went quiet. Let's let them finish.'"
+    "• Say please, thank you, sorry when needed\n• Don't interrupt\n• Reply within reasonable time",
+    "Professional ≠ cold. Be kind and clear."
   ),
   "comm-w9-topic-4": d(
-    "De-escalate:\n• 'Let's solve this together'\n• 'Focus on the issue'\n• 'Pause 10 min?'",
-    "Heated Slack → move to call."
+    "• Listen to teammates\n• Share credit: 'We fixed it'\n• Offer help without being asked sometimes",
+    "Good teammate = easy to work with globally."
   ),
   "comm-w9-topic-5": d(
-    "High emotion or missing facts → pause meeting",
-    "'Continue tomorrow with logs' beats angry decisions."
+    "• 'I understand that must be frustrating'\n• Ask how they feel before giving advice\n• Active listening again — reflect their words",
+    "PM stressed about deadline — acknowledge first."
   ),
   "comm-w9-ex-1": d(
-    "Write DESC for missed deadline (no warning).",
-    "Structure on paper first."
+    "1-min positive self-talk, then 1-min speech on a strength.",
+    "Builds inner + outer confidence."
   ),
   "comm-w9-ex-2": d(
-    "3 sentences to harsh feedback: 'code is messy.'",
-    "'Thanks. Example PR? I'll focus readability this sprint.'"
+    "3 scenarios: late teammate, harsh feedback, happy client — respond aloud.",
+    "EQ practice for real office moments."
   ),
   "comm-w9-ex-3": d(
-    "3 de-escalation lines for heated review thread.",
-    "DM or call > public argument."
+    "Etiquette checklist: email, chat, call — 5 rules each. Read aloud.",
+    "Your personal professional standards."
   ),
   "comm-w9-ex-4": d(
-    "Role-play: you want refactor, they want ship fast.",
-    "Find shared goal: ship safely."
+    "Role-play: teammate upset about bug in prod. Listen + empathize + next step.",
+    "'I hear you — let's triage together.'"
   ),
 
-  // Week 10
+  // Week 10 — Interview & Career Communication
   "comm-w10-topic-1": d(
-    "Explain stack simply:\nUser → API → Service → DB\nDraw boxes",
-    "'App hits API, saves to PostgreSQL' — enough for PM."
+    "• Research company + role\n• Prepare intro, projects, why this job\n• Dress neat, test mic/camera",
+    "HR round: culture fit + communication — practice aloud."
   ),
   "comm-w10-topic-2": d(
-    "README top:\n• what it does\n• how to run\n• env vars\n• how to test",
-    "Recruiters clone repo — no README = no run."
+    "• Name, stack, years, current focus\n• One impressive project in 20 seconds\n• End with what you want next",
+    "'I'm a Java developer. I built a payment API serving 10k users.'"
   ),
   "comm-w10-topic-3": d(
-    "Bug ticket:\n• steps\n• expected\n• actual\n• env + logs",
-    "'Login broken' vs 'Safari 17, step 1-2-3, 500 error'"
+    "• Know every line on resume\n• Explain project: problem, your role, result\n• No lies — they will ask details",
+    "'I owned the auth module — reduced login errors 40%.'"
   ),
   "comm-w10-topic-4": d(
-    "Review: specific + kind + actionable\n'nit:' for style only",
-    "Block on bugs/security/tests only."
+    "• Situation Task Action Result\n• 2-min max per story\n• Use real examples",
+    "'Tell me about a conflict' → STAR with teammate disagreement."
   ),
   "comm-w10-topic-5": d(
-    "Trade-off in business terms:\ntime, risk, cost — not jargon",
-    "'A ships fast. B scales. 1k users → A is fine.'"
+    "• Salary: research range, state expectation politely\n• Intro: same 90s script every time — polished",
+    "'Based on my research, I expect X–Y. Open to discussion.'"
   ),
   "comm-w10-ex-1": d(
-    "Explain your project to non-tech friend. 2 min.",
-    "If they get it, interview answer is ready."
+    "Record 90s career intro. Replay. Cut filler words. Re-record.",
+    "First question in almost every interview."
   ),
   "comm-w10-ex-2": d(
-    "Write bug report template with 4 sections.",
-    "Become the dev QA loves."
+    "Write + speak 3 STAR stories: challenge, teamwork, failure.",
+    "Covers 80% of behavioral questions."
   ),
   "comm-w10-ex-3": d(
-    "Rewrite 3 harsh review comments — keep tech fix.",
-    "'Wrong' → 'Returns null on empty — use Optional.empty()'"
+    "Answer 5 HR questions aloud: strengths, weakness, why us, where in 5 years, conflict.",
+    "Time yourself — under 2 min each."
   ),
   "comm-w10-ex-4": d(
-    "1 paragraph: choice made, alt rejected, why.",
-    "Mini ADR — good senior habit."
+    "Practice one salary line + one negotiation line — polite, firm.",
+    "I'm excited about the role. Could we discuss compensation?"
   ),
 
-  // Week 11
+  // Week 11 — Advanced Communication Mastery
   "comm-w11-topic-1": d(
-    "**STAR** (90 sec)\n• **S**ituation\n• **T**ask\n• **A**ction\n• **R**esult + number if possible",
-    "'Crash before launch → I owned fix → rollback + health check → zero downtime.'"
+    "• Listen to others first\n• Add value — don't dominate\n• Summarize: 'So far we agree on…'",
+    "Campus placement GD — structure beats shouting."
   ),
   "comm-w11-topic-2": d(
-    "90s intro:\nPresent → 1 past win → why this company",
-    "'Java dev, built payments, excited about your platform team.'"
+    "• Debate: respect other side\n• Negotiate: offer options, not ultimatums\n• 'What if we…' opens doors",
+    "'Could we split the feature across two sprints?'"
   ),
   "comm-w11-topic-3": d(
-    "Weakness = real + what you're fixing\nNo 'I'm a perfectionist'",
-    "'I over-engineered → now timebox spikes, ship MVP.'"
+    "• Stay on facts, not personal attacks\n• 'I feel… when… because…'\n• Find win-win when possible",
+    "Two devs want same task — discuss trade-offs calmly."
   ),
   "comm-w11-topic-4": d(
-    "Ask interviewer:\n• team shape\n• on-call\n• success at 6 months\nNot 'nothing'",
-    "'Strong first 90 days?' — shows you care."
+    "• Lead with benefit to listener\n• Use evidence + story\n• Call to action at end",
+    "'This refactor saves 2 hours/week — I recommend we do it in Sprint 3.'"
   ),
   "comm-w11-topic-5": d(
-    "Salary: research range → state X–Y → flexible on package",
-    "Polite + factual. Not apologetic."
+    "• Clear vision in few words\n• Praise in public, feedback in private\n• Admit mistakes — builds trust",
+    "Tech lead: 'Here's the plan. Questions?'"
   ),
   "comm-w11-ex-1": d(
-    "3 STAR stories: tech challenge, conflict, failure.",
-    "Covers most behavioral interviews."
+    "3-min GD solo: intro topic, 2 points, invite others, summary.",
+    "Practice both speaking and inviting others."
   ),
   "comm-w11-ex-2": d(
-    "Record 90s intro 5×. Cut fillers each time.",
-    "Watch video — fix speed & eyes."
+    "2-min debate — pick one side of: AI helps or hurts juniors.",
+    "Builds quick structured argument."
   ),
   "comm-w11-ex-3": d(
-    "5 hard Java Qs — 30s spoken answer each.",
-    "Speaking reveals gaps reading hides."
+    "Script calm talk: two teammates disagree on approach.",
+    "'Let's list pros of each option and decide together.'"
   ),
   "comm-w11-ex-4": d(
-    "5 questions specific to target company.",
-    "Shows real interest at offer stage."
+    "60s pitch: convince team to adopt one tool or practice.",
+    "End with: 'Can we try this for one sprint?'"
   ),
 
-  // Week 12
+  // Week 12 — Real-World Communication & Final Assessment
   "comm-w12-topic-1": d(
-    "Calls: steady pace, pause before key point, don't upspeak on statements",
-    "Match lead's pace on exec calls."
+    "• Full flow: intro → technical → behavioral → your questions\n• Dress, lighting, backup internet\n• Thank you email after",
+    "Treat mock like real — builds muscle memory."
   ),
   "comm-w12-topic-2": d(
-    "Story: context → problem → fix → lesson",
-    "'Q2 deadline → integration failed → phased rollout → test staging earlier.'"
+    "• Slides: few words, big visuals\n• Tell story, don't read slides\n• Q&A: pause, repeat question, answer",
+    "Project demo for college or client."
   ),
   "comm-w12-topic-3": d(
-    "US = more direct. UK/India = softer tone.\nSame facts, adjust style.",
-    "Global team = switch tone weekly."
+    "• Structure fast: point → reason → example\n• 1 min per topic — practice random prompts\n• Breathe — don't rush",
+    "'Tell me about a book you read' — impromptu favorite."
   ),
   "comm-w12-topic-4": d(
-    "Exec summary: 3 bullets at top, details below",
-    "CTO reads line 1 only — put ask there."
+    "• Elevator intro 30s\n• Ask about their work\n• Exchange LinkedIn — follow up",
+    "Meetup or conference: 'What are you working on?'"
   ),
   "comm-w12-topic-5": d(
-    "Weekly 15 min:\n• 1 recorded update\n• 1 email reviewed\n• 1 meeting listen-first",
-    "Maintain habit after week 12."
+    "• Ask for specific feedback\n• Note 3 strengths, 3 improvements\n• Weekly practice plan going forward",
+    "Communication is lifelong — plan next 12 weeks."
   ),
   "comm-w12-ex-1": d(
-    "3-min project story: start, conflict, lesson. Record.",
-    "Interview capstone story."
+    "Full mock: 90s intro + 5 questions (HR + tech). Record or with friend.",
+    "Capstone — use all prior weeks."
   ),
   "comm-w12-ex-2": d(
-    "1-page quarter summary: 3 bullets up top.",
-    "Same for promotion / client QBR."
+    "5-min presentation on your best project. Slides optional.",
+    "College viva or client demo ready."
   ),
   "comm-w12-ex-3": d(
-    "Same message — US direct vs UK soft version.",
-    "Practice both tones."
+    "3 random topics — 1 min each, no prep. Timer on.",
+    "Impromptu builds interview confidence."
   ),
   "comm-w12-ex-4": d(
-    "Note: best skill, weakest skill, 1 habit next month.",
-    "Close the 12-week loop."
+    "Write improvement plan: 3 strengths, 3 goals, weekly habits.",
+    "Your roadmap after Prathyu Communication module."
   ),
 };

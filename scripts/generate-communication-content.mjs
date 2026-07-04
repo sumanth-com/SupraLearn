@@ -40,7 +40,7 @@ export function getCommunicationDetail(
 ): AiLearnDetail {
   if (COMMUNICATION_CONTENT[id]) return COMMUNICATION_CONTENT[id];
   return d(
-    \`**\${title}** — try once in writing or aloud. Keep it under 1 minute.\`,
+    \`\${title} — try once in writing or aloud. Keep it under 1 minute.\`,
     "Clear updates at work = same care as clean code."
   );
 }

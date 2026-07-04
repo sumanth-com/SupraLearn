@@ -34,7 +34,7 @@ export function AiLearnAnswer({ title, detail, className, hideTitle }: AiLearnAn
       )}
 
       <LearnContentCard label="Answer" icon={BookOpen} accent="indigo">
-        <p className={learnProseClass}>{detail.answer}</p>
+        <p className={cn(learnProseClass, "whitespace-pre-wrap")}>{detail.answer}</p>
         {detail.code && (
           <pre className={learnCodeClass}>
             <code>{detail.code.trim()}</code>
@@ -43,7 +43,7 @@ export function AiLearnAnswer({ title, detail, className, hideTitle }: AiLearnAn
       </LearnContentCard>
 
       <LearnContentCard label="Real-World Example" icon={Lightbulb} accent="amber">
-        <p className={learnProseClass}>{detail.realWorld}</p>
+        <p className={cn(learnProseClass, "whitespace-pre-wrap")}>{detail.realWorld}</p>
       </LearnContentCard>
     </div>
   );

@@ -415,17 +415,20 @@ export function rebuildModuleGatesFromProgress(
   return gates;
 }
 
-export function migrateProgressStateV3(state: UserProgressState, weeks: CurriculumWeekDefinition[]): UserProgressState {
+export function migrateProgressStateV3(
+  state: UserProgressState,
+  weeks: CurriculumWeekDefinition[],
+  options?: { rebuildGates?: boolean }
+): UserProgressState {
   const withScroll = {
     ...state,
     scrollPositions: state.scrollPositions ?? {},
   };
 
-  if (withScroll.moduleGates && withScroll.version >= 3) {
-    return { ...withScroll, version: PROGRESS_VERSION };
-  }
-
-  const moduleGates = rebuildModuleGatesFromProgress(weeks, withScroll);
+  const moduleGates =
+    options?.rebuildGates || !withScroll.moduleGates || withScroll.version < 3
+      ? rebuildModuleGatesFromProgress(weeks, withScroll)
+      : withScroll.moduleGates;
 
   return {
     ...withScroll,

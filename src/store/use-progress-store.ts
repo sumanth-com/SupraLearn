@@ -41,6 +41,7 @@ import { COMMUNICATION_WEEKS } from "@/curriculum/communication-skills";
 import { createIdbPersistStorage } from "@/lib/idb-persist-storage";
 import { publishLiveActivity } from "@/lib/live-activity-sync";
 import { EXPORT_APP_ID } from "@/lib/client-persistence";
+import { ensureWeekOneUnlock } from "@/lib/week-one-seed";
 
 const defaultProfile: UserProfile = {
   name: "Prathyu",
@@ -57,13 +58,7 @@ const defaultNotes: AppNote[] = [];
 
 function syncModuleUnlocks(progress: UserProgressState): UserProgressState {
   const weeks = getCurriculumWeeks();
-  return migrateProgressStateV3(
-    {
-      ...progress,
-      moduleGates: rebuildModuleGatesFromProgress(weeks, progress),
-    },
-    weeks
-  );
+  return migrateProgressStateV3(progress, weeks, { rebuildGates: true });
 }
 
 interface ProgressStore {
@@ -367,7 +362,9 @@ export const useProgressStore = create<ProgressStore>()(
             updates.todayGoalCompleted = false;
           }
           const weeks = getCurriculumWeeks();
-          const progress = syncModuleUnlocks(migrateProgressStateV3(state.progress, weeks));
+          const progress = ensureWeekOneUnlock(
+            syncModuleUnlocks(migrateProgressStateV3(state.progress, weeks, { rebuildGates: true }))
+          );
           updates.progress = progress;
 
           const practiceWeek = getModuleCurrentWeek("practice", progress, getTotalWeeks());
@@ -603,6 +600,10 @@ export const useProgressStore = create<ProgressStore>()(
             progress = { ...progress, scrollPositions: {} };
           }
           if (version >= 1 && version < 7) {
+            progress = markWeekCompleteAllModules(progress, 1, weeks);
+          }
+          // v13–v14: Week 1 complete + Week 2 unlocked
+          if (version < 14) {
             progress = markWeekCompleteAllModules(progress, 1, weeks);
           }
           if (version < PROGRESS_VERSION) {
