@@ -9,13 +9,19 @@ import { isWeekFullyCompleteAcrossModules } from "@/lib/module-progress";
 import { fireWeekCelebration } from "@/components/shared/week-completion-celebration";
 import { syncCelebratedWeeks } from "@/lib/week-celebration-storage";
 
-/** Runs once on app load: restore profile, daily goal, streak. */
+/** Runs once on app load: restore profile, daily goal, streak, Week 1 completion. */
 export function ProgressBootstrap() {
   const bootstrap = useProgressStore((s) => s.bootstrapSession);
+  const repairWeekOneProgress = useProgressStore((s) => s.repairWeekOneProgress);
+  const hydrated = useStoreHydrated();
 
   useEffect(() => {
     bootstrap();
   }, [bootstrap]);
+
+  useEffect(() => {
+    if (hydrated) repairWeekOneProgress();
+  }, [hydrated, repairWeekOneProgress]);
 
   return null;
 }

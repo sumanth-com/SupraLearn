@@ -42,6 +42,9 @@ import { COMMUNICATION_WEEKS } from "@/curriculum/communication-skills";
 import { createIdbPersistStorage } from "@/lib/idb-persist-storage";
 import { publishLiveActivity } from "@/lib/live-activity-sync";
 import { EXPORT_APP_ID } from "@/lib/client-persistence";
+import {
+  ensureWeekOneComplete,
+} from "@/lib/week-one-seed";
 
 const defaultProfile: UserProfile = {
   name: "Prathyu",
@@ -127,6 +130,7 @@ interface ProgressStore {
   updateStreak: () => void;
   syncProfileFromProgress: () => void;
   bootstrapSession: () => void;
+  repairWeekOneProgress: () => void;
   resetWeekProgress: (weekId: number) => void;
   resetSectionProgress: (section: ResetSectionId, scope: ResetScope) => void;
   resetAllProgress: () => void;
@@ -368,9 +372,9 @@ export const useProgressStore = create<ProgressStore>()(
             updates.todayGoalCompleted = false;
           }
           const weeks = getCurriculumWeeks();
-          const progress = syncModuleUnlocks(
-            migrateProgressStateV3(state.progress, weeks)
-          );
+          let progress = migrateProgressStateV3(state.progress, weeks);
+          progress = ensureWeekOneComplete(progress);
+          progress = syncModuleUnlocks(progress);
           updates.progress = progress;
 
           const practiceWeek = getModuleCurrentWeek("practice", progress, getTotalWeeks());
@@ -390,6 +394,23 @@ export const useProgressStore = create<ProgressStore>()(
           return { ...state, ...updates };
         });
         get().updateStreak();
+      },
+
+      repairWeekOneProgress: () => {
+        const weeks = getCurriculumWeeks();
+        const before = get().progress;
+        if (isWeekFullyCompleteAcrossModules(before, 1, weeks)) return;
+
+        set((state) => {
+          let progress = ensureWeekOneComplete(state.progress);
+          progress = syncModuleUnlocks(progress);
+          const stats = computeGlobalStats(weeks, progress);
+          const currentWeek = getCurrentWeekId(weeks, progress);
+          return {
+            progress,
+            profile: syncDerivedProfile(state.profile, stats, currentWeek),
+          };
+        });
       },
 
       resetWeekProgress: (weekId) => {
@@ -608,6 +629,11 @@ export const useProgressStore = create<ProgressStore>()(
           if (version >= 1 && version < 7) {
             progress = markWeekCompleteAllModules(progress, 1, weeks);
           }
+          // v11: Week 1 complete in all sections → unlock Week 2
+          if (version < 11) {
+            progress = markWeekCompleteAllModules(progress, 1, weeks);
+          }
+          progress = ensureWeekOneComplete(progress);
           if (version < PROGRESS_VERSION) {
             progress = {
               ...progress,
