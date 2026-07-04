@@ -21,9 +21,9 @@ export function LockedWeekMessage({ module, weekId, className }: LockedWeekMessa
       <div>
         <p className="text-sm font-semibold text-zinc-200">🔒 Locked</p>
         <p className="mt-1 max-w-sm text-sm text-zinc-500">
-          Finish Week {weekId && weekId > 1 ? weekId - 1 : 1} in every section — Practice, AI
-          Skills, Projects, GitHub, Interview, and Communication — to unlock
-          {weekId ? ` Week ${weekId}` : " this content"}.
+          Finish Week {weekId && weekId > 1 ? weekId - 1 : 1} in every section (Practice, AI
+          Skills, Projects, GitHub, Interview, Communication) to unlock
+          {weekId ? ` Week ${weekId}` : " this week"}.
         </p>
       </div>
     </div>

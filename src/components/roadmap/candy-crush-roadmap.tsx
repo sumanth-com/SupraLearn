@@ -387,7 +387,7 @@ function WeekModuleCard({
 
           {locked && (
             <p className="mt-2 text-sm text-zinc-500">
-              🔒 Locked — Complete the previous week in Roadmap to unlock.
+              🔒 Locked — finish Week {week.id - 1} in every section to unlock.
             </p>
           )}
 

@@ -160,6 +160,11 @@ export const UNIFIED_WEEK_MODULES: LearningModule[] = [
   "interview",
 ];
 
+/**
+ * Week N+1 unlocks only when week N is 100% in every module above plus Communication.
+ * Example: week 2 done everywhere → week 3 opens in Roadmap, AI Skills, Projects, etc.
+ */
+
 export function isWeekFullyCompleteAcrossModules(
   progress: UserProgressState,
   weekId: number,
