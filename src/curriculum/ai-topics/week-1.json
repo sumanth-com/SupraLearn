@@ -1,42 +1,42 @@
 {
   "ai-t1": {
-    "answer": "Artificial Intelligence (AI) is the field of building systems that perform tasks requiring human-like intelligence — recognizing patterns, making decisions, understanding language, or generating content. Modern AI in software development mostly means machine learning models trained on huge datasets, not rule-based if-else programs. For you as a Java learner, AI is a tool that can explain concepts, suggest code, and review your work — but it does not replace understanding fundamentals.",
-    "realWorld": "When learning variables and loops in Java, read the for-loop explanation on this page — like counting items in a shopping cart. Then type and run the example in your IDE yourself. Understanding sticks when you write the code, not just read it."
+    "answer": "AI builds systems that recognize patterns, decide, and generate text/code. For Java learners, it's a study partner — explains concepts and reviews code. It does not replace knowing fundamentals.",
+    "realWorld": "Use AI to explain a for-loop, then type and run the example yourself. Understanding sticks when you write code, not only read."
   },
   "ai-t2": {
-    "answer": "Generative AI creates new content — text, code, images — from patterns learned during training. ChatGPT, Claude, and Gemini are generative models: you send a prompt, they generate a response token by token. Unlike a search engine that finds existing pages, generative AI produces novel output that may be correct, partially correct, or completely fabricated.",
-    "realWorld": "The Practice Exercises section here shows a Java grade calculator example. Study it, run it in your IDE, and fix edge cases like empty input. You learn more by debugging than by only reading the answer."
+    "answer": "Generative AI creates new text, code, or images from learned patterns. ChatGPT and Claude generate token by token. Output may be right, partly right, or wrong — always verify.",
+    "realWorld": "AI drafts a grade calculator — you run it, fix empty-input bugs, and learn more from debugging than from reading."
   },
   "ai-t3": {
-    "answer": "A Large Language Model (LLM) is a neural network trained on massive text/code datasets to predict the next token in a sequence. That simple mechanism, scaled up, produces fluent answers, code, and explanations. LLMs don't 'know' facts like a database — they estimate statistically likely continuations based on training data, which is why verification matters.",
-    "realWorld": "When you ask Copilot to autocomplete a Java method, it is an LLM predicting likely code based on your file context and millions of open-source examples. Sometimes it nails your style; sometimes it hallucinates a method that doesn't exist on String."
+    "answer": "An LLM predicts the next token from huge training data. That produces fluent answers but not guaranteed facts. It estimates likely text, not a database lookup.",
+    "realWorld": "Copilot autocompletes Java from your file context — sometimes perfect, sometimes invents methods that don't exist on String."
   },
   "ai-t4": {
-    "answer": "A prompt is the input you give an AI model — your question, instruction, or context. The quality of the prompt directly shapes the quality of the response. Prompts can be one line ('What is polymorphism?') or structured briefs with role, constraints, and examples. Think of a prompt as a specification document for the AI.",
-    "realWorld": "Bad prompt: 'Java arrays.' Good prompt: 'Explain Java arrays to a beginner who knows variables. Include declaration, initialization, and a loop example. Keep it under 150 words.' The second prompt gives you a focused lesson you can use while studying Week 1 topics."
+    "answer": "A prompt is your instruction to the model: question, task, or context. Better prompts → better answers. Think of it as a mini spec for the AI.",
+    "realWorld": "Bad: 'Java arrays.' Good: 'Explain arrays for a beginner with declaration, init, and a loop example under 100 words.'"
   },
   "ai-t5": {
-    "answer": "A good prompt is specific, contextual, and constrained. Include: (1) your goal, (2) relevant background, (3) desired format, (4) boundaries ('don't use advanced topics I haven't learned'), and (5) examples if needed. Good prompts reduce vague or overly advanced answers and make AI feel like a patient tutor instead of a random search result.",
-    "realWorld": "While learning if-else, prompt: 'I'm a Week 1 Java student. Write one if-else example for grading (A/B/C/F) using only int scores and println. Add comments explaining each branch.' You get teachable code aligned with your level."
+    "answer": "Good prompts include: goal, your level, desired format, and limits ('no topics I haven't learned'). Specific beats vague every time.",
+    "realWorld": "'Week 1 student — one if-else grading example with int score and println, commented branches.'"
   },
   "ai-t6": {
-    "answer": "Hallucination is when an AI confidently states false information — fake citations, invented Java methods, or incorrect syntax presented as fact. LLMs optimize for plausible text, not verified truth. Hallucinations are more common for niche APIs, recent events, or precise numeric facts.",
-    "realWorld": "You ask AI for the signature of a Java 21 method it doesn't know well. It might invent `String.reverse()` (which doesn't exist on String). Always check the official JDK docs or compile the code — never trust generated APIs blindly."
+    "answer": "Hallucination = confident false info: fake APIs, wrong syntax, invented citations. More common for rare libraries and version-specific details.",
+    "realWorld": "AI suggests String.reverse() — doesn't exist. JDK docs + compiler catch it immediately."
   },
   "ai-t7": {
-    "answer": "AI gives wrong answers because: (1) training data has errors or gaps, (2) the model generalizes incorrectly, (3) your prompt was ambiguous, (4) the question needs real-time or private data the model lacks, or (5) it optimizes for sounding confident over being correct. Understanding this keeps you skeptical and professional.",
-    "realWorld": "AI suggests using `==` to compare two String names in Java. You remember from class that `equals()` is correct for content comparison. You fix the suggestion, add a test, and learn why — the AI mistake actually reinforced your understanding."
+    "answer": "Wrong answers come from training gaps, ambiguous prompts, missing live data, or the model sounding confident over being correct. Stay skeptical.",
+    "realWorld": "AI says use == for String names — you fix with equals() and add a test. The mistake reinforced your knowledge."
   },
   "ai-t8": {
-    "answer": "AI ethics covers responsible use: privacy (don't paste confidential code or PII into public tools), bias (models reflect biased training data), attribution (know when AI-generated work needs disclosure), environmental cost, and job impact. As a developer, ethics means choosing when AI helps users vs. when it could harm them.",
-    "realWorld": "Before sharing code online for help, ask: is this allowed by policy? Could customer data leak? Ethical developers protect sensitive data and only use approved learning platforms like this one for coursework."
+    "answer": "Ethics: don't paste secrets/PII into public tools, disclose AI help when required, know bias in training data. Protect users and company data.",
+    "realWorld": "Before pasting prod code into chat: allowed by policy? Could customer data leak?"
   },
   "ai-t9": {
-    "answer": "Trust AI when: the task is explanatory (concepts, analogies), the output is easy to verify (small code snippets you can compile), you're brainstorming alternatives, or you need a first draft to refine. Cross-check important facts with docs, textbooks, or your mentor. Trust but verify.",
-    "realWorld": "You trust AI to explain the difference between `int` and `double` because you can confirm it against your Week 1 notes and a quick main() experiment. You don't trust it blindly for your final exam answers without studying yourself."
+    "answer": "Trust AI for explanations and small snippets you can compile. Cross-check docs for anything important. Trust but verify.",
+    "realWorld": "int vs double — confirm with a 5-line main() experiment, not blind copy."
   },
   "ai-t10": {
-    "answer": "Do not trust AI alone for: production security decisions, legal/compliance advice, unverified medical or financial guidance, copying homework without understanding, or deploying code you haven't tested. Also be cautious with rare libraries, exact version-specific APIs, and math-heavy proofs — error rates rise.",
-    "realWorld": "AI generates a password-storage snippet using MD5. You know (or look up) that bcrypt or Argon2 is required for real apps. You reject the suggestion — that's professional judgment AI cannot replace."
+    "answer": "Don't trust AI alone for security, legal, or production deploys. Don't submit homework you don't understand. Test every generated snippet.",
+    "realWorld": "AI suggests MD5 for passwords — you reject and use BCrypt. That's professional judgment."
   }
 }

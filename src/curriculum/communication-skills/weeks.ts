@@ -49,7 +49,7 @@ export const COMMUNICATION_WEEKS: CommunicationWeekModule[] = [
       { title: "Record and review a 60-second self-introduction" },
       { title: "Read a paragraph aloud at half your normal speed" },
       { title: "Mark stressed syllables in ten workplace sentences" },
-      { title: "Practice five tongue-twisters for consonant clarity" },
+      { title: "Give a 90-second stand-up update (yesterday / today / blockers)" },
     ]),
   },
   {

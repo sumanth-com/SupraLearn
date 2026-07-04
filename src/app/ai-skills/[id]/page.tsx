@@ -24,7 +24,7 @@ export default function AISkillWeekPage({ params }: { params: Promise<{ id: stri
   const curriculumWeek = useCurriculumWeek(isProfessional ? 1 : weekId);
   const weekProgress = useWeekProgress(isProfessional ? 1 : weekId);
   const isModuleLocked = useProgressStore((s) => s.isModuleWeekLocked("ai-skills", weekId));
-  const isLocked = !isProfessional && isModuleLocked;
+  const isLocked = isModuleLocked;
   const isDone = useProgressStore((s) => s.isDone);
   const progress = useProgressStore((s) => s.progress);
   const toggleComplete = useProgressStore((s) => s.toggleComplete);
@@ -45,7 +45,7 @@ export default function AISkillWeekPage({ params }: { params: Promise<{ id: stri
     displayTitle,
     isProfessional ? "Professional track" : `Week ${weekId}`,
     `/ai-skills/${weekId}`,
-    Boolean(skill) && !isProfessional && !isLocked
+    Boolean(skill) && !isLocked
   );
 
   if (!skill || (!isProfessional && !curriculumWeek)) {
@@ -61,7 +61,7 @@ export default function AISkillWeekPage({ params }: { params: Promise<{ id: stri
     );
   }
 
-  if (!isProfessional && isLocked) {
+  if (isLocked) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
         <LockedWeekMessage module="ai-skills" weekId={weekId} />

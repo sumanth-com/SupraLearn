@@ -8,7 +8,7 @@ import {
   buildRichExercise,
   buildWeek12Topic,
   buildWeek12Exercise,
-} from "./ai-rich-content.mjs";
+} from "./ai-concise-content.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");

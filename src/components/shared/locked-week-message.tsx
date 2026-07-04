@@ -1,5 +1,5 @@
 import { Lock } from "lucide-react";
-import { MODULE_LABELS, type LearningModule } from "@/lib/module-progress";
+import type { LearningModule } from "@/lib/module-progress";
 
 interface LockedWeekMessageProps {
   module: LearningModule;
@@ -21,8 +21,8 @@ export function LockedWeekMessage({ module, weekId, className }: LockedWeekMessa
       <div>
         <p className="text-sm font-semibold text-zinc-200">🔒 Locked</p>
         <p className="mt-1 max-w-sm text-sm text-zinc-500">
-          Complete the previous week in {MODULE_LABELS[module]}
-          {weekId && weekId > 1 ? ` (Week ${weekId - 1})` : ""} to unlock
+          Finish Week {weekId && weekId > 1 ? weekId - 1 : 1} in every section — Practice, AI
+          Skills, Projects, GitHub, Interview, and Communication — to unlock
           {weekId ? ` Week ${weekId}` : " this content"}.
         </p>
       </div>

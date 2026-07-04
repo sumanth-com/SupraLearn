@@ -52,7 +52,7 @@ export default function AISkillsPage() {
         weekId: PROFESSIONAL_AI_WEEK_ID,
         title: getProfessionalAiWeekTitle(),
         skill: professionalSkill,
-        locked: false,
+        locked: isModuleWeekLocked("ai-skills", PROFESSIONAL_AI_WEEK_ID),
         progress: (() => {
           const ids = collectAiIds(professionalSkill);
           const done = ids.filter((id) => isDone(id)).length;
