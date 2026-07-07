@@ -32,6 +32,7 @@ import {
   getModuleWeekProgress,
   isModuleWeekCompleted,
   isModuleWeekLocked,
+  markWeekCompleteAllModules,
   migrateProgressStateV3,
   rebuildModuleGatesFromProgress,
   type LearningModule,
@@ -40,6 +41,7 @@ import { COMMUNICATION_WEEKS } from "@/curriculum/communication-skills";
 import { createIdbPersistStorage } from "@/lib/idb-persist-storage";
 import { publishLiveActivity } from "@/lib/live-activity-sync";
 import { EXPORT_APP_ID } from "@/lib/client-persistence";
+import { ensurePrathyuBootstrap } from "@/lib/week-bootstrap";
 const defaultProfile: UserProfile = {
   name: "Prathyu",
   avatar: "P",
@@ -360,7 +362,9 @@ export const useProgressStore = create<ProgressStore>()(
           }
           const weeks = getCurriculumWeeks();
           const progress = syncModuleUnlocks(
-            migrateProgressStateV3(state.progress, weeks, { rebuildGates: true })
+            ensurePrathyuBootstrap(
+              migrateProgressStateV3(state.progress, weeks, { rebuildGates: true })
+            )
           );
           updates.progress = progress;
 
@@ -596,6 +600,9 @@ export const useProgressStore = create<ProgressStore>()(
           let progress = state.progress as UserProgressState;
           if (!progress.scrollPositions) {
             progress = { ...progress, scrollPositions: {} };
+          }
+          if (version < 18) {
+            progress = markWeekCompleteAllModules(progress, 2, weeks);
           }
           if (version < PROGRESS_VERSION) {
             progress = {
