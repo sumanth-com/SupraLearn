@@ -29,7 +29,7 @@ export interface UserProgressState {
   completedWeekIds: number[];
 }
 
-export const PROGRESS_VERSION = 16;
+export const PROGRESS_VERSION = 17;
 
 export const defaultProgressState: UserProgressState = {
   version: PROGRESS_VERSION,

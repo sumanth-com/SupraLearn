@@ -510,7 +510,8 @@ export const useProgressStore = create<ProgressStore>()(
               ...((data.progress as UserProgressState)?.scrollPositions ?? {}),
             },
           },
-          weeks
+          weeks,
+          { rebuildGates: true }
         );
         const progress = syncModuleUnlocks(mergedProgress);
 
@@ -604,7 +605,7 @@ export const useProgressStore = create<ProgressStore>()(
               scrollPositions: progress.scrollPositions ?? {},
             };
           }
-          state.progress = migrateProgressStateV3(progress, weeks);
+          state.progress = migrateProgressStateV3(progress, weeks, { rebuildGates: true });
         }
         if (version < PROGRESS_VERSION && !state.resumePosition) {
           state.resumePosition = null;

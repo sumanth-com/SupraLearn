@@ -1,4 +1,4 @@
-const CACHE_NAME = "supracodez-v2";
+const CACHE_NAME = "supracodez-v3";
 const STATIC_ASSETS = ["/manifest.json", "/supra-learn-icon.svg"];
 
 self.addEventListener("message", (event) => {

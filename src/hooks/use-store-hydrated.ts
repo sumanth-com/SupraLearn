@@ -1,20 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { useProgressStore } from "@/store/use-progress-store";
 
-/** True after Zustand persist has rehydrated from localStorage (client-only). */
+function subscribeHydrated(onStoreChange: () => void) {
+  return useProgressStore.persist.onFinishHydration(onStoreChange);
+}
+
+function getHydratedSnapshot() {
+  return useProgressStore.persist.hasHydrated();
+}
+
+function getServerSnapshot() {
+  return false;
+}
+
+/** True after Zustand persist has rehydrated from IndexedDB (client-only). */
 export function useStoreHydrated() {
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    const store = useProgressStore.persist;
-    if (store.hasHydrated()) {
-      setHydrated(true);
-      return;
-    }
-    return store.onFinishHydration(() => setHydrated(true));
-  }, []);
-
-  return hydrated;
+  return useSyncExternalStore(subscribeHydrated, getHydratedSnapshot, getServerSnapshot);
 }
