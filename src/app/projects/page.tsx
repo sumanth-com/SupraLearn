@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProgressStore } from "@/store/use-progress-store";
+import { useStoreHydrated } from "@/hooks/use-store-hydrated";
 import {
   getAllProjectListings,
   PORTFOLIO_WEEK_ID,
@@ -16,6 +17,7 @@ import { Progress } from "@/components/ui/progress";
 type DifficultyFilter = ProjectDifficulty | "all";
 
 export default function ProjectsPage() {
+  const hydrated = useStoreHydrated();
   const isDone = useProgressStore((s) => s.isDone);
   const isModuleWeekLocked = useProgressStore((s) => s.isModuleWeekLocked);
 
@@ -41,6 +43,9 @@ export default function ProjectsPage() {
       progressPct: total ? Math.round((done / total) * 100) : 0,
     };
   }, [allProjects, isDone]);
+
+  const displayCompleted = hydrated ? completedProjects : 0;
+  const displayProgressPct = hydrated ? progressPct : 0;
 
   const weekOptions = useMemo(() => {
     const weeks = new Set(allProjects.map((p) => p.weekId));
@@ -68,13 +73,13 @@ export default function ProjectsPage() {
           <div className="min-w-0">
             <h1 className="text-xl font-bold tracking-tight text-zinc-50 sm:text-2xl">Projects</h1>
             <p className="mt-0.5 text-sm tabular-nums text-zinc-400">
-              {completedProjects} / {totalProjects} completed
+              {displayCompleted} / {totalProjects} completed
             </p>
           </div>
           <div className="flex w-full items-center gap-2.5 sm:max-w-xs">
-            <Progress value={progressPct} className="h-1.5 flex-1" />
+            <Progress value={displayProgressPct} className="h-1.5 flex-1" />
             <span className="w-9 shrink-0 text-right text-xs font-medium tabular-nums text-indigo-300">
-              {progressPct}%
+              {displayProgressPct}%
             </span>
           </div>
         </div>
@@ -110,8 +115,10 @@ export default function ProjectsPage() {
           {filtered.map((project, i) => {
             const locked =
               project.weekId !== PORTFOLIO_WEEK_ID &&
-              isModuleWeekLocked("projects", project.weekId);
-            const complete = isDone(`${project.id}-complete`);
+              (hydrated
+                ? isModuleWeekLocked("projects", project.weekId)
+                : project.weekId !== 1);
+            const complete = hydrated && isDone(`${project.id}-complete`);
 
             return (
               <ProjectCard

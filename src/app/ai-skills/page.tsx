@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useProgressStore } from "@/store/use-progress-store";
 import { useCurriculum } from "@/hooks/use-curriculum";
+import { useStoreHydrated } from "@/hooks/use-store-hydrated";
 import {
   getProfessionalAiSkill,
   PROFESSIONAL_AI_WEEK_ID,
@@ -30,6 +31,7 @@ function collectAiIds(skill: CurriculumWeekDefinition["aiSkill"]) {
 
 export default function AISkillsPage() {
   const weeks = useCurriculum();
+  const hydrated = useStoreHydrated();
   const professionalSkill = getProfessionalAiSkill();
   const isDone = useProgressStore((s) => s.isDone);
   const isModuleWeekLocked = useProgressStore((s) => s.isModuleWeekLocked);
@@ -81,6 +83,9 @@ export default function AISkillsPage() {
     };
   }, [allModules, isDone]);
 
+  const displayCompleted = hydrated ? completedItems : 0;
+  const displayProgressPct = hydrated ? progressPct : 0;
+
   const weekOptions = [
     { value: "all" as const, label: "All Weeks" },
     ...allModules.map((m) => ({
@@ -96,16 +101,16 @@ export default function AISkillsPage() {
           <div className="min-w-0">
             <h1 className="text-xl font-bold tracking-tight text-zinc-50 sm:text-2xl">AI Skills</h1>
             <p className="mt-0.5 text-sm tabular-nums text-zinc-400">
-              {completedItems} / {totalItems} completed
+              {displayCompleted} / {totalItems} completed
             </p>
             <p className="mt-1 text-xs text-zinc-500">
               Java + Gen AI skills for ~2 years experience — prompt engineering through RAG, Spring AI, and production patterns
             </p>
           </div>
           <div className="flex w-full items-center gap-2.5 sm:max-w-xs">
-            <Progress value={progressPct} className="h-1.5 flex-1" />
+            <Progress value={displayProgressPct} className="h-1.5 flex-1" />
             <span className="w-9 shrink-0 text-right text-xs font-medium tabular-nums text-indigo-300">
-              {progressPct}%
+              {displayProgressPct}%
             </span>
           </div>
         </div>
@@ -127,7 +132,9 @@ export default function AISkillsPage() {
       <CardGrid className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {visibleModules.map((mod, i) => {
           const itemCount = countAiItems(mod.skill);
-          const complete = mod.progress === 100;
+          const locked = hydrated ? mod.locked : mod.weekId !== 1;
+          const progress = hydrated ? mod.progress : 0;
+          const complete = progress === 100;
           const weekLabel =
             mod.weekId === PROFESSIONAL_AI_WEEK_ID ? "Professional" : `Week ${mod.weekId}`;
 
@@ -146,12 +153,12 @@ export default function AISkillsPage() {
                   mod.skill.description ??
                   `Learn AI tools and practice ${itemCount} exercises this week.`
                 }
-                progress={mod.progress}
+                progress={progress}
                 progressDetail={`${itemCount} topics & exercises`}
-                href={mod.locked ? undefined : `/ai-skills/${mod.weekId}`}
+                href={locked ? undefined : `/ai-skills/${mod.weekId}`}
                 accent="purple"
-                variant={mod.locked ? "locked" : complete ? "success" : "default"}
-                locked={mod.locked}
+                variant={locked ? "locked" : complete ? "success" : "default"}
+                locked={locked}
                 complete={complete}
               />
             </motion.div>

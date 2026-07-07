@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useProgressStore } from "@/store/use-progress-store";
 import { useCurriculum } from "@/hooks/use-curriculum";
+import { useStoreHydrated } from "@/hooks/use-store-hydrated";
 import { getSupplementalInterviewPacks } from "@/curriculum/interview/merge";
 import {
   countInterviewDone,
@@ -17,6 +18,7 @@ import { Progress } from "@/components/ui/progress";
 
 export default function InterviewPage() {
   const weeks = useCurriculum();
+  const hydrated = useStoreHydrated();
   const supplementalPacks = useMemo(() => getSupplementalInterviewPacks(), []);
   const isDone = useProgressStore((s) => s.isDone);
   const isModuleWeekLocked = useProgressStore((s) => s.isModuleWeekLocked);
@@ -52,6 +54,9 @@ export default function InterviewPage() {
     };
   }, [allWeekItems, allPackItems, isDone]);
 
+  const displayCompleted = hydrated ? completedQuestions : 0;
+  const displayProgressPct = hydrated ? progressPct : 0;
+
   const visibleWeeks =
     filterWeek === "all" || filterWeek === "api" || filterWeek === "db"
       ? filterWeek === "all"
@@ -82,13 +87,13 @@ export default function InterviewPage() {
               Interview Questions
             </h1>
             <p className="mt-0.5 text-sm tabular-nums text-zinc-400">
-              {completedQuestions} / {totalQuestions} mastered
+              {displayCompleted} / {totalQuestions} mastered
             </p>
           </div>
           <div className="flex w-full items-center gap-2.5 sm:w-auto sm:min-w-[200px]">
-            <Progress value={progressPct} className="h-1.5 flex-1" />
+            <Progress value={displayProgressPct} className="h-1.5 flex-1" />
             <span className="shrink-0 text-sm font-semibold tabular-nums text-indigo-300">
-              {progressPct}%
+              {displayProgressPct}%
             </span>
           </div>
         </div>
@@ -109,11 +114,12 @@ export default function InterviewPage() {
 
       <CardGrid className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {visibleWeeks.map((week, i) => {
-          const locked = isModuleWeekLocked("interview", week.id);
+          const locked = hydrated ? isModuleWeekLocked("interview", week.id) : week.id !== 1;
           const wp = getWeekProgress(week.id);
           const total = countInterviewItems(week.interviewQuestions);
-          const done = countInterviewDone(week.interviewQuestions, isDone);
-          const complete = wp.interview.percentage === 100;
+          const done = hydrated ? countInterviewDone(week.interviewQuestions, isDone) : 0;
+          const progress = hydrated ? wp.interview.percentage : 0;
+          const complete = progress === 100;
 
           return (
             <motion.div
@@ -127,7 +133,7 @@ export default function InterviewPage() {
                 weekLabel={`Week ${week.id}`}
                 title={week.title}
                 subtitle={`Master ${total} interview questions covering Java, OOP, and concepts from this week.`}
-                progress={wp.interview.percentage}
+                progress={progress}
                 progressDetail={`${done}/${total} questions mastered`}
                 href={locked ? undefined : `/interview/${week.id}`}
                 accent="sky"
@@ -141,8 +147,8 @@ export default function InterviewPage() {
 
         {visiblePacks.map((pack, i) => {
           const total = countInterviewItems(pack.categories);
-          const done = countInterviewDone(pack.categories, isDone);
-          const pct = total ? Math.round((done / total) * 100) : 0;
+          const done = hydrated ? countInterviewDone(pack.categories, isDone) : 0;
+          const pct = hydrated && total ? Math.round((done / total) * 100) : 0;
           const complete = pct === 100;
 
           return (

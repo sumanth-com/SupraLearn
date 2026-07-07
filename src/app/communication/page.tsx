@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Languages } from "lucide-react";
 import { useProgressStore } from "@/store/use-progress-store";
+import { useStoreHydrated } from "@/hooks/use-store-hydrated";
 import {
   COMMUNICATION_WEEKS,
   getCommunicationWeekProgress,
@@ -14,6 +15,7 @@ import { TopicWeekCard } from "@/components/shared/topic-week-card";
 import { Progress } from "@/components/ui/progress";
 
 export default function CommunicationSkillsPage() {
+  const hydrated = useStoreHydrated();
   const isDone = useProgressStore((s) => s.isDone);
   const isModuleWeekLocked = useProgressStore((s) => s.isModuleWeekLocked);
   const isModuleWeekCompleted = useProgressStore((s) => s.isModuleWeekCompleted);
@@ -43,6 +45,9 @@ export default function CommunicationSkillsPage() {
     };
   }, [modules]);
 
+  const displayCompleted = hydrated ? completed : 0;
+  const displayProgressPct = hydrated ? progressPct : 0;
+
   return (
     <div className="space-y-5">
       <StickyPageToolbar className="space-y-3 py-3">
@@ -67,19 +72,19 @@ export default function CommunicationSkillsPage() {
           </div>
           <div className="flex w-full items-center gap-2.5 sm:max-w-xs">
             <Progress
-              value={progressPct}
+              value={displayProgressPct}
               className="h-1.5 flex-1"
               indicatorClassName="bg-gradient-to-r from-emerald-500 to-teal-400"
             />
             <span className="w-9 shrink-0 text-right text-xs font-medium tabular-nums text-emerald-400">
-              {progressPct}%
+              {displayProgressPct}%
             </span>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 border-t border-zinc-800/60 pt-3 text-xs text-zinc-500">
           <span>
-            {completed} / {total} completed
+            {displayCompleted} / {total} completed
           </span>
           <span className="hidden sm:inline">·</span>
           <span>What to learn for clear, credible workplace communication</span>
@@ -88,9 +93,10 @@ export default function CommunicationSkillsPage() {
 
       <CardGrid className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {modules.map((mod, i) => {
-          const complete = mod.progress === 100;
-          const locked = isModuleWeekLocked("communication", mod.weekId);
-          const active = !locked && !complete && mod.weekId === communicationCurrentWeek;
+          const progress = hydrated ? mod.progress : 0;
+          const complete = progress === 100;
+          const locked = hydrated ? isModuleWeekLocked("communication", mod.weekId) : mod.weekId !== 1;
+          const active = hydrated && !locked && !complete && mod.weekId === communicationCurrentWeek;
           return (
             <motion.div
               key={mod.weekId}
@@ -103,13 +109,13 @@ export default function CommunicationSkillsPage() {
                 weekLabel={`Week ${mod.weekId}`}
                 title={mod.title}
                 subtitle={mod.subtitle}
-                progress={mod.progress}
+                progress={progress}
                 progressDetail={`${mod.itemCount} lessons & exercises`}
                 href={locked ? undefined : `/communication/${mod.weekId}`}
                 accent="emerald"
                 variant={complete ? "success" : active ? "active" : "default"}
                 locked={locked}
-                complete={complete || isModuleWeekCompleted("communication", mod.weekId)}
+                complete={complete || (hydrated && isModuleWeekCompleted("communication", mod.weekId))}
               />
             </motion.div>
           );

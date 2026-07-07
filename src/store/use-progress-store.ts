@@ -32,7 +32,6 @@ import {
   getModuleWeekProgress,
   isModuleWeekCompleted,
   isModuleWeekLocked,
-  markWeekCompleteAllModules,
   migrateProgressStateV3,
   rebuildModuleGatesFromProgress,
   type LearningModule,
@@ -41,8 +40,6 @@ import { COMMUNICATION_WEEKS } from "@/curriculum/communication-skills";
 import { createIdbPersistStorage } from "@/lib/idb-persist-storage";
 import { publishLiveActivity } from "@/lib/live-activity-sync";
 import { EXPORT_APP_ID } from "@/lib/client-persistence";
-import { ensureWeekOneUnlock } from "@/lib/week-one-seed";
-
 const defaultProfile: UserProfile = {
   name: "Prathyu",
   avatar: "P",
@@ -362,8 +359,8 @@ export const useProgressStore = create<ProgressStore>()(
             updates.todayGoalCompleted = false;
           }
           const weeks = getCurriculumWeeks();
-          const progress = ensureWeekOneUnlock(
-            syncModuleUnlocks(migrateProgressStateV3(state.progress, weeks, { rebuildGates: true }))
+          const progress = syncModuleUnlocks(
+            migrateProgressStateV3(state.progress, weeks, { rebuildGates: true })
           );
           updates.progress = progress;
 
@@ -598,13 +595,6 @@ export const useProgressStore = create<ProgressStore>()(
           let progress = state.progress as UserProgressState;
           if (!progress.scrollPositions) {
             progress = { ...progress, scrollPositions: {} };
-          }
-          if (version >= 1 && version < 7) {
-            progress = markWeekCompleteAllModules(progress, 1, weeks);
-          }
-          // v13–v14: Week 1 complete + Week 2 unlocked
-          if (version < 14) {
-            progress = markWeekCompleteAllModules(progress, 1, weeks);
           }
           if (version < PROGRESS_VERSION) {
             progress = {
