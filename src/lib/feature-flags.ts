@@ -1,2 +1,2 @@
-/** Set true to open every week in every section. */
-export const UNLOCK_ALL_WEEKS = true;
+/** When true, every week is open. Keep false for normal progressive unlock. */
+export const UNLOCK_ALL_WEEKS = false;

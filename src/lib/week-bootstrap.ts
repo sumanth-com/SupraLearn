@@ -24,8 +24,8 @@ function ensureWeekComplete(
 }
 
 /**
- * Bootstrap weeks 1–2 to 100% everywhere so week 3 opens on every device.
- * Week 4+ still unlock only when the previous week is fully completed.
+ * Bootstrap weeks 1–2 to 100% everywhere so weeks 1, 2, and 3 are unlocked.
+ * Week 4+ unlocks only when the previous week is fully completed.
  */
 export function ensurePrathyuBootstrap(progress: UserProgressState): UserProgressState {
   let next = ensureWeekComplete(progress, 1, 2);
