@@ -19,7 +19,10 @@ import {
   buildWeek2ControlFlowProblem,
   isWeek2ControlFlowTopic,
 } from "./week2-control-flow-bank.mjs";
-import { getUniversalVariant, maybeInjectBug } from "./universal-variant-bank.mjs";
+import {
+  buildWeek3OopProblem,
+  isWeek3OopTopic,
+} from "./week3-oop-bank.mjs";
 
 const DIFFICULTIES = ["easy", "medium", "hard"];
 
@@ -50,6 +53,10 @@ function generateJavaTypedProblem(slug, topicTitle, category, difficulty, proble
     return buildWeek2ControlFlowProblem(slug, topicTitle, category, difficulty, problemType, index);
   }
 
+  if (isWeek3OopTopic(slug)) {
+    return buildWeek3OopProblem(slug, topicTitle, category, difficulty, problemType, index);
+  }
+
   if (slug === "for-loop") {
     return generateForLoopProblem(difficulty, problemType, index);
   }
@@ -58,37 +65,6 @@ function generateJavaTypedProblem(slug, topicTitle, category, difficulty, proble
   const seed = hashSeed(`${slug}-${difficulty}-${problemType}-${index}`);
   const n = (seed % 15) + 3;
   const rows = (index % 6) + 3;
-
-  // Universal variant generation: prevents “same template with only values changed”
-  // across easy/medium/hard and within the same topic.
-  {
-    const variant = getUniversalVariant({ slug, topicTitle, category, difficulty, problemType, index });
-    const codeRaw = variant.code(className);
-    const code = maybeInjectBug({ code: codeRaw, problemType, index });
-    const expectedOutput = variant.output;
-
-    return buildPayload({
-      slug,
-      topicTitle,
-      category,
-      difficulty,
-      problemType,
-      index,
-      className,
-      title: `${typeLabel(problemType)} #${index + 1}: ${variant.title}`,
-      description: `Solve a unique ${problemType} variant for ${topicTitle}.`,
-      problemStatement: variant.statement,
-      code,
-      expectedOutput,
-      exampleInput: variant.input,
-      exampleOutput: expectedOutput,
-      explanation: variant.explanation,
-      dryRun: `Trace the program and confirm output: ${String(expectedOutput).split("\n")[0]}`,
-      visualization: `${topicTitle} → stdout`,
-      hints: variant.hints,
-      executionTrace: [{ line: 1, action: "compute", state: `output=${expectedOutput}` }],
-    });
-  }
 
   if (problemType === "output-prediction") {
     const a = n;

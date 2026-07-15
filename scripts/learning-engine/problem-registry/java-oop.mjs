@@ -20,7 +20,11 @@ import {
   buildWeek2ControlFlowProblem,
   isWeek2ControlFlowTopic,
 } from "../lib/week2-control-flow-bank.mjs";
-import { getUniversalVariant, maybeInjectBug } from "../lib/universal-variant-bank.mjs";
+import {
+  buildWeek3OopProblem,
+  isWeek3OopTopic,
+} from "../lib/week3-oop-bank.mjs";
+import { maybeInjectBug } from "../lib/universal-variant-bank.mjs";
 import { getQuotasForTopic, estimatedMinutes } from "../lib/problem-type-spec.mjs";
 
 const DIFFICULTIES = ["easy", "medium", "hard"];
@@ -374,6 +378,87 @@ function buildJavaCode(slug, className, difficulty, idx) {
 
 function buildOopCode(slug, className, difficulty, idx) {
   const n = (hashSeed(`${slug}-${difficulty}-${idx}`) % 40) + 10;
+
+  if (slug === "encapsulation") {
+    const start = n;
+    const deposit = idx + 15;
+    return {
+      code: javaSolution(
+        className,
+        [],
+        `    static class BankAccount {
+        private int balance;
+        BankAccount(int balance) { this.balance = balance; }
+        public void deposit(int amount) { if (amount > 0) balance += amount; }
+        public int getBalance() { return balance; }
+    }
+`,
+        `        BankAccount acc = new BankAccount(${start});
+        acc.deposit(${deposit});
+        System.out.println(acc.getBalance());`
+      ),
+      expectedOutput: `${start + deposit}`,
+      exampleOutput: `${start + deposit}`,
+      exampleInput: `start=${start}, deposit=${deposit}`,
+      constraints: ["Keep balance private; mutate only through methods"],
+      dryRun: "Constructor sets private balance; deposit updates it; getter prints final value.",
+      visualization: "private field → deposit() → getBalance() → stdout",
+      explanation: "Encapsulation hides balance and exposes safe deposit/getBalance APIs.",
+    };
+  }
+
+  if (slug === "constructors") {
+    return {
+      code: javaSolution(
+        className,
+        [],
+        `    static class Student {
+        String name;
+        int marks;
+        Student(String name, int marks) {
+            this.name = name;
+            this.marks = marks;
+        }
+    }
+`,
+        `        Student s = new Student("Asha", ${n});
+        System.out.println(s.name + ":" + s.marks);`
+      ),
+      expectedOutput: `Asha:${n}`,
+      exampleOutput: `Asha:${n}`,
+      exampleInput: `name=Asha, marks=${n}`,
+      constraints: ["Initialize fields only through the constructor"],
+      dryRun: "Constructor assigns name and marks; main prints them.",
+      visualization: "new Student(...) → fields ready → stdout",
+      explanation: "Parameterized constructors initialize object state at creation time.",
+    };
+  }
+
+  if (slug === "classes-objects") {
+    return {
+      code: javaSolution(
+        className,
+        [],
+        `    static class Car {
+        int speed;
+        void accelerate() { speed += 10; }
+    }
+`,
+        `        Car c = new Car();
+        c.speed = ${n};
+        c.accelerate();
+        System.out.println(c.speed);`
+      ),
+      expectedOutput: `${n + 10}`,
+      exampleOutput: `${n + 10}`,
+      exampleInput: `speed=${n}`,
+      constraints: ["Create an object and call an instance method"],
+      dryRun: "Object created, field set, method updates state, print speed.",
+      visualization: "class → object → method → stdout",
+      explanation: "Classes define blueprints; objects hold state and behavior.",
+    };
+  }
+
   const body = `    static class Account {
         private final String name;
         private int balance;
@@ -637,68 +722,54 @@ function buildMultithreadingCode(slug, className, difficulty, idx) {
   };
 }
 
+function topicCodeForCategory(slug, className, category, difficulty, idx) {
+  if (category === "oop") return buildOopCode(slug, className, difficulty, idx);
+  if (category === "collections") return buildCollectionsCode(slug, className, difficulty, idx);
+  if (category === "java8") return buildJava8Code(slug, className, difficulty, idx);
+  if (category === "multithreading") return buildMultithreadingCode(slug, className, difficulty, idx);
+  return buildJavaCode(slug, className, difficulty, idx);
+}
+
 function buildProblemPayload(slug, topicTitle, category, difficulty, idx, problemType) {
   const className = clsName(slug, `${difficulty[0].toUpperCase()}${idx + 1}`);
   const prompt = `${titleCaseSlug(slug)} scenario ${idx + 1} (${difficulty})`;
   const complexity =
-    difficulty === "easy" ? ["O(n)", "O(n)", "O(1)"] : ["O(n^2)", "O(n log n)", "O(n)"];
-  const variant = getUniversalVariant({ slug, topicTitle, category, difficulty, problemType, index: idx });
-  const codeRaw = variant.code(className);
-  const code = maybeInjectBug({ code: codeRaw, problemType, index: idx });
-
-  const generated = {
-    constraints: [
-      `${topicTitle} concepts (unique variant) — compile & run.`,
-      "Program must compile and produce the expected output.",
-    ],
-    exampleInput: variant.input,
-    exampleOutput: variant.output,
-    expectedOutput: variant.output,
-    code,
-    explanation: variant.explanation,
-    dryRun: `Trace the program and confirm output: ${String(variant.output).split("\n")[0]}`,
-    visualization: `${topicTitle} → stdout`,
-  };
+    difficulty === "easy" ? ["O(1)", "O(1)", "O(1)"] : ["O(n)", "O(n)", "O(1)"];
+  const generated = topicCodeForCategory(slug, className, category, difficulty, idx);
+  const code = maybeInjectBug({ code: generated.code, problemType, index: idx });
+  const output = generated.expectedOutput ?? generated.exampleOutput;
 
   const base = {
     title: `${prompt} Challenge`,
-    description: `Solve a real coding exercise focused on ${topicTitle}.`,
-    problemStatement: variant.statement,
-    constraints: generated.constraints,
-    exampleInput: generated.exampleInput,
-    exampleOutput: generated.exampleOutput,
+    description: `Practice ${topicTitle} with working, topic-matched Java code.`,
+    problemStatement: `${generated.explanation} Apply ${topicTitle} and produce the expected output.`,
+    constraints: [
+      ...(generated.constraints ?? []),
+      `Stay focused on ${topicTitle} — do not replace it with unrelated arithmetic.`,
+      "Program must compile and produce the expected output.",
+    ],
+    exampleInput: generated.exampleInput ?? "No input",
+    exampleOutput: output,
     explanation: generated.explanation,
     approaches: defaultApproaches(difficulty, complexity[0], complexity[1], complexity[2]),
-    code: generated.code,
+    code,
     filename: `${className}.java`,
-    expectedOutput: generated.expectedOutput,
-    dryRun: generated.dryRun,
-    visualization: generated.visualization,
+    expectedOutput: output,
+    dryRun: generated.dryRun ?? `Trace and confirm output: ${String(output).split("\n")[0]}`,
+    visualization: generated.visualization ?? `${topicTitle} → stdout`,
     companyTags: [],
     commonMistakes: [
-      "Skipping edge-case validation",
+      "Ignoring the topic and writing unrelated code",
       "Changing logic without re-checking expected output",
     ],
     interviewTips: [
-      "Explain trade-offs before writing the final approach.",
-      "Mention why this structure scales for larger input.",
+      `Explain how this example demonstrates ${topicTitle}.`,
+      "Mention real backend use-cases for this concept.",
     ],
-    alternativeSolutions: [
-      "Use a more concise API-based approach.",
-      "Rewrite with explicit loops for clarity.",
-    ],
-    followUpQuestions: [
-      "How would this behave for very large inputs?",
-      "What changes if we add strict validation rules?",
-    ],
-    practiceVariations: [
-      "Handle negative and zero values.",
-      "Return the value from a method instead of printing.",
-    ],
-    practiceQuestions: [
-      "Write unit tests for two edge cases.",
-      "Refactor the core logic into a reusable method.",
-    ],
+    alternativeSolutions: ["Keep the same concept with clearer naming."],
+    followUpQuestions: [`How would you extend this ${topicTitle} example?`],
+    practiceVariations: ["Change sample values and predict the new output."],
+    practiceQuestions: [`Explain this ${topicTitle} solution without running it.`],
   };
 
   return {
@@ -726,6 +797,9 @@ function buildTopicAwareProblem(slug, topicTitle, category, difficulty, problemT
   if (isWeek2ControlFlowTopic(slug)) {
     return buildWeek2ControlFlowProblem(slug, topicTitle, category, difficulty, problemType, index);
   }
+  if (isWeek3OopTopic(slug)) {
+    return buildWeek3OopProblem(slug, topicTitle, category, difficulty, problemType, index);
+  }
 
   const payload = buildProblemPayload(slug, topicTitle, category, difficulty, index, problemType);
   const prefix = problemTypePrefix(problemType);
@@ -742,7 +816,7 @@ function buildTopicAwareProblem(slug, topicTitle, category, difficulty, problemT
     problemType,
     estimatedMinutes: estimatedMinutes(difficulty, problemType),
     problemStatement: payload.problemStatement
-      ? `Using ${topicTitle}, ${payload.problemStatement.charAt(0).toLowerCase()}${payload.problemStatement.slice(1)}`
+      ? payload.problemStatement
       : `Practice ${topicTitle} at ${difficulty} level.`,
     companyTags: [],
   };
